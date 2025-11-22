@@ -13,7 +13,7 @@ import Checkbox from '../../components/ui/Checkbox';
 import { useAuthStore } from '../../store/authStore';
 import { useDeviceFingerprint } from '../../hooks/useDeviceFingerprint';
 import type { User } from '../../types';
-import { Mail, Lock, AlertTriangle } from 'lucide-react';
+import { Mail, Lock, AlertTriangle, Check } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { api } from '../../services/api';
 
@@ -38,13 +38,14 @@ const getHomeRoute = (user: User) => {
 
 
 const Login: React.FC = () => {
-    const { user, loginWithEmail, loginWithGoogle, error, setError, loading } = useAuthStore();
+    const { user, loginWithEmail, loginWithGoogle, error, setError, loading, setLoginAnimationPending, isLoginAnimationPending } = useAuthStore();
     const navigate = useNavigate();
     const location = useLocation();
 
     // Device fingerprinting for tracking device changes (no security blocking)
     const { deviceInfo, isNewDevice, previousDevice } = useDeviceFingerprint();
     const [deviceAlertSent, setDeviceAlertSent] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
 
     useEffect(() => {
@@ -78,10 +79,10 @@ const Login: React.FC = () => {
 
     // This effect will run when the `user` state changes in the store.
     useEffect(() => {
-        if (user) {
+        if (user && !isLoginAnimationPending) {
             navigate(getHomeRoute(user), { replace: true });
         }
-    }, [user, navigate]);
+    }, [user, navigate, isLoginAnimationPending]);
 
 
     // Email form
@@ -99,14 +100,24 @@ const Login: React.FC = () => {
     }, [setValue]);
 
     const onEmailSubmit: SubmitHandler<EmailFormInputs> = async (data) => {
-        await loginWithEmail(data.email, data.password, data.rememberMe || false);
+        setLoginAnimationPending(true);
+        const result = await loginWithEmail(data.email, data.password, data.rememberMe || false);
+
+        if (result.error) {
+            setLoginAnimationPending(false);
+        } else {
+            setIsSuccess(true);
+            setTimeout(() => {
+                setLoginAnimationPending(false);
+            }, 1500);
+        }
     };
 
     const handleGoogleLogin = async () => {
         await loginWithGoogle();
     };
 
-    const isFormDisabled = loading;
+    const isFormDisabled = loading || isSuccess;
 
     return (
         <>
@@ -169,12 +180,15 @@ const Login: React.FC = () => {
 
                 <Button
                     type="submit"
-                    className="w-full !bg-transparent border border-[#22c55e] !text-[#22c55e] hover:!bg-[#22c55e] hover:!text-white !font-bold !py-3 !rounded-full shadow-lg shadow-green-500/20 transition-all transform hover:scale-[1.02] signin-btn"
-                    isLoading={loading}
+                    className={`w-full !font-bold !py-3 !rounded-full shadow-lg transition-all transform hover:scale-[1.02] signin-btn ${isSuccess
+                            ? '!bg-[#22c55e] !border-[#22c55e] !text-white hover:!bg-[#22c55e]'
+                            : '!bg-transparent border border-[#22c55e] !text-[#22c55e] hover:!bg-[#22c55e] hover:!text-white shadow-green-500/20'
+                        }`}
+                    isLoading={loading && !isSuccess}
                     size="lg"
-                    disabled={isFormDisabled}
+                    disabled={isFormDisabled && !isSuccess}
                 >
-                    Sign In
+                    {isSuccess ? <Check className="w-6 h-6 animate-bounce" /> : "Sign In"}
                 </Button>
             </form>
 

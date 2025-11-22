@@ -60,6 +60,8 @@ interface AuthState {
     setError: (error: string | null) => void;
     loading: boolean;
     setLoading: (loading: boolean) => void;
+    isLoginAnimationPending: boolean;
+    setLoginAnimationPending: (pending: boolean) => void;
 }
 
 // Helper for time-based greetings
@@ -81,6 +83,9 @@ export const useAuthStore = create<AuthState>()(
         error: null,
         loading: false,
 
+        isLoginAnimationPending: false,
+        setLoginAnimationPending: (pending) => set({ isLoginAnimationPending: pending }),
+
         setUser: (user) => set({ user, error: null, loading: false }),
         setInitialized: (initialized) => set({ isInitialized: initialized }),
         setLoading: (loading) => set({ loading }),
@@ -89,6 +94,7 @@ export const useAuthStore = create<AuthState>()(
             isAttendanceLoading: false,
             lastCheckInTime: null,
             lastCheckOutTime: null,
+            isLoginAnimationPending: false,
         }),
         setError: (error) => set({ error }),
 

@@ -154,7 +154,7 @@ const MainLayoutWrapper: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  const { user, isInitialized, setUser, setInitialized, resetAttendance, setLoading } = useAuthStore();
+  const { user, isInitialized, setUser, setInitialized, resetAttendance, setLoading, isLoginAnimationPending } = useAuthStore();
   const { init: initEnrollmentRules } = useEnrollmentRulesStore();
   const { initRoles } = usePermissionsStore();
   const { initSettings } = useSettingsStore();
@@ -360,7 +360,9 @@ const App: React.FC = () => {
     // navigate there.  This ensures that refreshing the browser or reopening
     // the app returns the user to the page they were last working on.  If no
     // last path is stored, we send the user to their profile page.
-    if (user && (
+    // We also check isLoginAnimationPending to allow the login page to show a success animation.
+
+    if (user && !isLoginAnimationPending && (
       location.pathname.startsWith('/auth') ||
       location.pathname === '/' ||
       location.pathname === '/splash'
@@ -373,7 +375,7 @@ const App: React.FC = () => {
         navigate('/profile', { replace: true });
       }
     }
-  }, [isInitialized, user, location.pathname, navigate]);
+  }, [isInitialized, user, location.pathname, navigate, isLoginAnimationPending]);
 
 
   // While the initial authentication check is running, show the splash screen.
