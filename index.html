@@ -583,11 +583,11 @@
     @media (max-width: 768px) {
 
       /* Universal button styling - Green primary style */
-      button:not(nav button):not(.btn-icon):not(.btn-secondary):not(.google-btn):not(.signin-btn),
-      .btn:not(nav .btn):not(.btn-icon):not(.btn-secondary):not(.google-btn):not(.signin-btn),
-      [type="button"]:not(nav [type="button"]):not(.btn-icon):not(.btn-secondary):not(.google-btn):not(.signin-btn),
-      [type="submit"]:not(.signin-btn),
-      a[class*="btn"] {
+      button:not(nav button):not(.btn-icon):not(.btn-secondary):not(.google-btn):not(.signin-btn):not(.btn-danger),
+      .btn:not(nav .btn):not(.btn-icon):not(.btn-secondary):not(.google-btn):not(.signin-btn):not(.btn-danger),
+      [type="button"]:not(nav [type="button"]):not(.btn-icon):not(.btn-secondary):not(.google-btn):not(.signin-btn):not(.btn-danger),
+      [type="submit"]:not(.signin-btn):not(.btn-danger),
+      a[class*="btn"]:not(.btn-danger) {
         background-color: #22c55e !important;
         color: #ffffff !important;
         border: none !important;
