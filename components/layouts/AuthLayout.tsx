@@ -59,7 +59,7 @@ const AuthLayout: React.FC = () => {
 
             {/* Centered content container */}
             <div className="relative w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl p-4">
-                <div className="auth-card-container w-full grid md:grid-cols-2 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md bg-black/40 border border-white/10">
+                <div className="auth-card-container w-full grid md:grid-cols-2 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md bg-black/40 border border-[#041b0f] md:border-white/10">
                     {/* Left Visual Column */}
                     <div className="hidden md:flex flex-col justify-between p-6 lg:p-10 xl:p-16 bg-gradient-to-br from-black/40 to-black/70">
                         <div>

@@ -20,7 +20,7 @@ const getFriendlyAuthError = (errorMessage: string): string => {
         return 'Connection to the backend failed: The API key is invalid. Please contact the administrator to correct the configuration.';
     }
     if (errorMessage.toLowerCase().includes('failed to fetch')) {
-        return 'Network error: Could not connect to Supabase. This is often a CORS issue. Please go to your Supabase project\'s "Authentication" > "URL Configuration" settings and add your app\'s URL to the "Redirect URLs" list. For local development, this is typically http://localhost:5173 or similar.';
+        return 'Network issue please check your network';
     }
     if (errorMessage.includes('Invalid login credentials')) {
         return 'Invalid email or password. Please try again.';
