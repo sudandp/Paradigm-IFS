@@ -1534,7 +1534,7 @@ const AttendanceDashboard: React.FC = () => {
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap items-end gap-4">
+            <div className="hidden md:flex bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex-wrap items-end gap-4">
                 {/* Date Filters Group */}
                 <div className="flex flex-wrap items-center gap-2">
                     {['Today', 'Last 7 Days', 'This Month'].map(filter => (
@@ -1645,7 +1645,7 @@ const AttendanceDashboard: React.FC = () => {
                 <StatCard title={`On Leave ${statDateLabel}`} value={dashboardData?.onLeaveToday || 0} icon={Clock} />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ChartContainer title="Attendance Trend" icon={BarChart3}>
                     {dashboardData ? <AttendanceTrendChart data={dashboardData.attendanceTrend} /> : <Loader2 className="h-6 w-6 animate-spin text-muted mx-auto mt-20" />}
                 </ChartContainer>
@@ -1662,7 +1662,7 @@ const AttendanceDashboard: React.FC = () => {
             </div>
 
             {/* Visible Preview (Optional - for user to see what they are downloading) */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 overflow-auto max-h-[600px]">
+            <div className="hidden md:block bg-white p-6 rounded-xl shadow-sm border border-gray-100 overflow-auto max-h-[600px]">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-semibold">Report Preview</h2>
                     {canDownloadReport && (

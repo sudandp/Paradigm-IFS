@@ -50,7 +50,7 @@ const getNextDueDateInfo = (task: Task): { date: string | null; isOverdue: boole
             // No further due dates
             break;
     }
-    
+
     // If no escalation path, the only due date is the base one.
     if (!nextDueDate) nextDueDate = baseDueDate;
 
@@ -64,13 +64,13 @@ const TaskManagement: React.FC = () => {
     const { user } = useAuthStore();
     const { tasks, isLoading, error, fetchTasks, deleteTask, runAutomaticEscalations } = useTaskStore();
     const { theme } = useThemeStore();
-    
+
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isCompleteFormOpen, setIsCompleteFormOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [currentTask, setCurrentTask] = useState<Task | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-    
+
     const [users, setUsers] = useState<User[]>([]);
     const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
     const [priorityFilter, setPriorityFilter] = useState<'all' | TaskPriority>('all');
@@ -95,7 +95,7 @@ const TaskManagement: React.FC = () => {
         setCurrentTask(task);
         setIsFormOpen(true);
     };
-    
+
     const handleComplete = (task: Task) => {
         setCurrentTask(task);
         setIsCompleteFormOpen(true);
@@ -134,13 +134,13 @@ const TaskManagement: React.FC = () => {
             return true;
         });
     }, [tasks, statusFilter, priorityFilter, assignedToFilter]);
-    
+
     const clearFilters = () => {
         setStatusFilter('all');
         setPriorityFilter('all');
         setAssignedToFilter('all');
     };
-    
+
     const areFiltersActive = statusFilter !== 'all' || priorityFilter !== 'all' || assignedToFilter !== 'all';
 
 
@@ -153,7 +153,7 @@ const TaskManagement: React.FC = () => {
         };
         return <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${styles[priority]}`}>{priority}</span>;
     };
-    
+
     const getStatusChip = (status: Task['status']) => {
         const isDark = theme === 'dark';
         const styles = {
@@ -163,7 +163,7 @@ const TaskManagement: React.FC = () => {
         };
         return <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${styles[status]}`}>{status}</span>;
     };
-    
+
     const getEscalationChip = (status: EscalationStatus) => {
         if (status === 'None') return null;
         const isDark = theme === 'dark';
@@ -179,7 +179,7 @@ const TaskManagement: React.FC = () => {
     return (
         <div className="p-4 md:bg-card md:p-6 md:rounded-xl md:shadow-card">
             {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
-            
+
             {isFormOpen && (
                 <TaskForm
                     isOpen={isFormOpen}
@@ -188,7 +188,7 @@ const TaskManagement: React.FC = () => {
                     setToast={setToast}
                 />
             )}
-            
+
             {isCompleteFormOpen && currentTask && (
                 <CompleteTaskForm
                     isOpen={isCompleteFormOpen}
@@ -206,9 +206,9 @@ const TaskManagement: React.FC = () => {
             >
                 Are you sure you want to delete the task "{currentTask?.name}"?
             </Modal>
-            
+
             <AdminPageHeader title="Task Management" />
-            
+
             <div className="flex flex-col md:flex-row gap-4 mb-6 md:items-end justify-between">
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Select label="Filter by Status" id="status-filter" value={statusFilter} onChange={e => setStatusFilter(e.target.value as any)}>
@@ -238,7 +238,7 @@ const TaskManagement: React.FC = () => {
                     <Button onClick={handleAdd}><Plus className="mr-2 h-4 w-4" /> Add Task</Button>
                 </div>
             </div>
-            
+
             {error && <p className="text-red-500 mb-4">{error}</p>}
 
             <div className="overflow-x-auto">
@@ -285,7 +285,7 @@ const TaskManagement: React.FC = () => {
                         })}
                     </tbody>
                 </table>
-                 {!isLoading && filteredTasks.length === 0 && (
+                {!isLoading && filteredTasks.length === 0 && (
                     <div className="text-center py-10 text-muted">
                         <p>No tasks found matching your criteria.</p>
                         {areFiltersActive && <Button variant="secondary" size="sm" className="mt-2" onClick={clearFilters}>Clear filters</Button>}

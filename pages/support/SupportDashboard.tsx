@@ -196,9 +196,9 @@ const SupportDashboard: React.FC = () => {
     };
 
     const StatCard: React.FC<{ title: string, value: number, icon: React.ReactNode, colorClass: string }> = ({ title, value, icon, colorClass }) => (
-        <div className="bg-card dark:bg-gray-900 p-5 rounded-2xl border border-border dark:border-white/10 shadow-sm flex items-center justify-between transition-all hover:shadow-md dark:hover:border-white/20">
+        <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
             <div>
-                <p className="text-sm font-medium text-muted dark:text-gray-400 mb-1">{title}</p>
+                <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
                 <p className={`text-3xl font-bold ${colorClass.replace('bg-', 'text-').split(' ')[0]}`}>{value}</p>
             </div>
             <div className={`p-3 rounded-full bg-opacity-10 ${colorClass.replace('text-', 'bg-')} ${colorClass}`}>
@@ -242,17 +242,17 @@ const SupportDashboard: React.FC = () => {
             </Modal>
 
             {/* Header Section */}
-            <div className="relative overflow-hidden rounded-3xl bg-white border border-gray-200 dark:border-none dark:bg-transparent p-6 lg:p-10 shadow-sm dark:shadow-none transition-all">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50/50 opacity-20 rounded-full blur-3xl -mr-16 -mt-16 dark:hidden"></div>
+            <div className="relative overflow-hidden rounded-3xl bg-white border border-gray-200 p-6 lg:p-10 shadow-sm transition-all">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50/50 opacity-20 rounded-full blur-3xl -mr-16 -mt-16"></div>
                 <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-emerald-50 rounded-lg backdrop-blur-sm dark:bg-emerald-900/30">
-                                <LifeBuoy className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                            <div className="p-2 bg-emerald-50 rounded-lg backdrop-blur-sm">
+                                <LifeBuoy className="h-6 w-6 text-emerald-600" />
                             </div>
-                            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Support & Audit</h2>
+                            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900">Support & Audit</h2>
                         </div>
-                        <p className="text-gray-500 dark:text-gray-400 max-w-xl text-sm">
+                        <p className="text-gray-500 max-w-xl text-sm">
                             Track issues, request audits, and connect with support staff in real-time.
                         </p>
                     </div>
@@ -261,17 +261,19 @@ const SupportDashboard: React.FC = () => {
                             <Button
                                 onClick={() => setIsNearbyModalOpen(true)}
                                 variant="secondary"
-                                className="flex-1 lg:flex-none bg-gray-100 text-gray-900 hover:bg-gray-200 border-none shadow-none p-0 text-sm dark:bg-transparent dark:text-white dark:hover:text-emerald-400 transition-colors"
+                                className="flex-1 lg:flex-none bg-gray-100 text-gray-900 hover:bg-gray-200 border-none shadow-none p-0 text-sm transition-colors"
                             >
                                 <UserCheck className="mr-1.5 h-3.5 w-3.5" /> Nearby
                             </Button>
                         )}
-                        <Button
+                        <span
                             onClick={() => setIsNewTicketModalOpen(true)}
-                            className="flex-1 lg:flex-none bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-md shadow-emerald-200 dark:shadow-none text-sm py-2 px-4 dark:!bg-transparent dark:hover:bg-transparent dark:text-white dark:hover:text-emerald-400 transition-colors"
+                            className="flex-1 lg:flex-none cursor-pointer inline-flex items-center justify-center !bg-emerald-600 hover:!bg-emerald-700 !text-white !border-none shadow-md shadow-emerald-200 text-sm py-2 px-4 transition-colors rounded-xl isolate relative before:!content-none after:!content-none"
+                            style={{ backgroundImage: 'none' }}
                         >
-                            <Plus className="mr-1.5 h-3.5 w-3.5" /> New Ticket
-                        </Button>
+                            <Plus className="mr-1.5 h-3.5 w-3.5 relative z-10" />
+                            <span className="relative z-10">New Ticket</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -301,14 +303,14 @@ const SupportDashboard: React.FC = () => {
             <div className="lg:grid lg:grid-cols-3 lg:gap-8">
                 {/* Main Content - Ticket List */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-card dark:bg-gray-900 p-5 rounded-2xl border border-border dark:border-white/10 shadow-sm">
+                    <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
                         <div className="flex flex-col sm:flex-row gap-4 mb-6">
                             <div className="relative flex-grow">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <Input
                                     id="search"
                                     placeholder="Search tickets..."
-                                    className="pl-10 bg-background dark:bg-gray-950 dark:border-gray-800"
+                                    className="pl-10 bg-gray-50 border-gray-200"
                                     value={filters.searchTerm}
                                     onChange={e => setFilters(f => ({ ...f, searchTerm: e.target.value }))}
                                 />
@@ -318,7 +320,7 @@ const SupportDashboard: React.FC = () => {
                                     <Select
                                         value={filters.status}
                                         onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}
-                                        className="bg-background dark:bg-gray-950 dark:border-gray-800"
+                                        className="bg-gray-50 border-gray-200"
                                     >
                                         <option value="all">All Status</option>
                                         <option>Open</option>
@@ -332,7 +334,7 @@ const SupportDashboard: React.FC = () => {
                                     <Select
                                         value={filters.priority}
                                         onChange={e => setFilters(f => ({ ...f, priority: e.target.value }))}
-                                        className="bg-background dark:bg-gray-950 dark:border-gray-800"
+                                        className="bg-gray-50 border-gray-200"
                                     >
                                         <option value="all">All Priority</option>
                                         <option>Low</option>

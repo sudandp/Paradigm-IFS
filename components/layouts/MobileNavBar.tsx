@@ -166,7 +166,7 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({ user, permissions, setIsMob
                 permissionName={permissionNeeded}
             />
             <nav
-                className={`fixed bottom-6 left-6 right-6 z-[100] md:hidden bg-[#0d2c18] !bg-[#0d2c18] border border-white/15 rounded-2xl shadow-2xl shadow-black/40 transition-transform duration-300 ${isMobileMenuOpen ? 'translate-y-[150%]' : 'translate-y-0'}`}
+                className={`fixed bottom-6 left-6 right-6 z-[100] md:hidden bg-[#0d2c18] !bg-[#0d2c18] border border-white/15 rounded-full shadow-2xl shadow-black/40 transition-transform duration-300 ${isMobileMenuOpen ? 'translate-y-[150%]' : 'translate-y-0'}`}
                 style={{
                     height: '64px',
                 }}
@@ -179,10 +179,10 @@ const MobileNavBar: React.FC<MobileNavBarProps> = ({ user, permissions, setIsMob
                         const showActive = isActive;
 
                         // Common container classes for alignment
-                        const containerClasses = "flex flex-col items-center justify-center w-16 h-full active:scale-95 transition-transform duration-200";
+                        const containerClasses = "flex flex-col items-center justify-center w-16 h-full transition-transform duration-200";
 
                         // Icon container classes for the shape and color
-                        const iconContainerClasses = `flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-500 ${showActive
+                        const iconContainerClasses = `flex items-center justify-center w-12 h-12 rounded-full transition-all duration-500 ${showActive
                             ? "bg-gradient-to-tr from-emerald-500 to-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] scale-110"
                             : "text-white/60 hover:text-white hover:bg-white/5"
                             }`;

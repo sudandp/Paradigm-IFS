@@ -100,8 +100,8 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose, onSucc
   // Mobile Full-Screen View
   if (isMobile) {
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col bg-[#0f1f0f] text-white animate-fade-in-scale">
-        <header className="p-4 flex-shrink-0 flex items-center gap-4 border-b border-[#374151]">
+      <div className="fixed inset-0 z-[100] flex flex-col !bg-[#0d1f12] text-white animate-fade-in-scale">
+        <header className="p-4 flex-shrink-0 flex items-center gap-4 border-b border-white/10">
           <Button variant="icon" onClick={onClose} aria-label="Close form"><ArrowLeft className="h-6 w-6" /></Button>
           <h3 className="text-lg font-semibold">Create New Post</h3>
         </header>
@@ -111,37 +111,37 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose, onSucc
             placeholder="Title / Subject"
             {...register('title')}
             error={errors.title?.message}
-            className="form-input bg-[#1a2e1a] border-[#374151] text-white placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500"
+            className="form-input bg-[#152b1b] border-white/10 text-white placeholder-white/40 focus:border-emerald-500 focus:ring-emerald-500"
           />
           <textarea
             placeholder="Description"
             {...register('description')}
             rows={5}
-            className={`form-input bg-[#1a2e1a] border-[#374151] text-white placeholder-gray-400 focus:border-emerald-500 focus:ring-emerald-500 ${errors.description ? 'form-input--error' : ''}`}
+            className={`form-input bg-[#152b1b] border-white/10 text-white placeholder-white/40 focus:border-emerald-500 focus:ring-emerald-500 ${errors.description ? 'form-input--error' : ''}`}
           />
 
           <Controller name="category" control={control} render={({ field }) => (
-            <Select {...field} error={errors.category?.message} className="pro-select pro-select-arrow bg-[#1a2e1a] border-[#374151] text-white focus:border-emerald-500 focus:ring-emerald-500">
-              <option className="bg-[#0f1f0f]">Software Developer</option>
-              <option className="bg-[#0f1f0f]">Admin</option>
-              <option className="bg-[#0f1f0f]">Operational</option>
-              <option className="bg-[#0f1f0f]">HR Query</option>
-              <option className="bg-[#0f1f0f]">Other</option>
+            <Select {...field} error={errors.category?.message} className="pro-select pro-select-arrow bg-[#152b1b] border-white/10 text-white focus:border-emerald-500 focus:ring-emerald-500">
+              <option className="bg-[#0d1f12]">Software Developer</option>
+              <option className="bg-[#0d1f12]">Admin</option>
+              <option className="bg-[#0d1f12]">Operational</option>
+              <option className="bg-[#0d1f12]">HR Query</option>
+              <option className="bg-[#0d1f12]">Other</option>
             </Select>
           )} />
           <Controller name="priority" control={control} render={({ field }) => (
-            <Select {...field} error={errors.priority?.message} className="pro-select pro-select-arrow bg-[#1a2e1a] border-[#374151] text-white focus:border-emerald-500 focus:ring-emerald-500">
-              <option className="bg-[#0f1f0f]">Low</option>
-              <option className="bg-[#0f1f0f]">Medium</option>
-              <option className="bg-[#0f1f0f]">High</option>
-              <option className="bg-[#0f1f0f]">Urgent</option>
+            <Select {...field} error={errors.priority?.message} className="pro-select pro-select-arrow bg-[#152b1b] border-white/10 text-white focus:border-emerald-500 focus:ring-emerald-500">
+              <option className="bg-[#0d1f12]">Low</option>
+              <option className="bg-[#0d1f12]">Medium</option>
+              <option className="bg-[#0d1f12]">High</option>
+              <option className="bg-[#0d1f12]">Urgent</option>
             </Select>
           )} />
           <Controller name="assignedToId" control={control} render={({ field }) => (
-            <Select {...field} value={field.value ?? ''} error={errors.assignedToId?.message} className="pro-select pro-select-arrow bg-[#1a2e1a] border-[#374151] text-white focus:border-emerald-500 focus:ring-emerald-500">
-              <option value="" className="bg-[#0f1f0f]">Unassigned</option>
+            <Select {...field} value={field.value ?? ''} error={errors.assignedToId?.message} className="pro-select pro-select-arrow bg-[#152b1b] border-white/10 text-white focus:border-emerald-500 focus:ring-emerald-500">
+              <option value="" className="bg-[#0d1f12]">Unassigned</option>
               {assignableUsers.map(u => (
-                <option key={u.id} value={u.id} className="bg-[#0f1f0f]">{u.name} ({u.role.replace(/_/g, ' ')})</option>
+                <option key={u.id} value={u.id} className="bg-[#0d1f12]">{u.name} ({u.role.replace(/_/g, ' ')})</option>
               ))}
             </Select>
           )} />
@@ -160,7 +160,7 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose, onSucc
           />
         </form>
 
-        <footer className="p-4 flex-shrink-0 flex items-center justify-end gap-3 border-t border-[#374151]">
+        <footer className="p-4 flex-shrink-0 flex items-center justify-end gap-3 border-t border-white/10">
           <Button type="button" onClick={onClose} variant="secondary">Cancel</Button>
           <Button type="submit" form={formId} isLoading={isSubmitting}>Create Post</Button>
         </footer>
