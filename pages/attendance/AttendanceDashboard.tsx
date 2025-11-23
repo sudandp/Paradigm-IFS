@@ -744,14 +744,14 @@ const AttendanceDashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const [dateRange, setDateRange] = useState<Range>({
-        startDate: startOfMonth(new Date()),
-        endDate: endOfMonth(new Date()),
+        startDate: startOfToday(),
+        endDate: endOfToday(),
         key: 'selection'
     });
 
     const dateRangeArray = useMemo(() => [dateRange], [dateRange]);
 
-    const [activeDateFilter, setActiveDateFilter] = useState('Last 7 Days');
+    const [activeDateFilter, setActiveDateFilter] = useState('Today');
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
     const datePickerRef = useRef<HTMLDivElement>(null);
 
@@ -793,7 +793,9 @@ const AttendanceDashboard: React.FC = () => {
             if (!isEmployeeView || !user || !dateRange.startDate || !dateRange.endDate) return;
             setIsLoading(true);
             try {
-                const startStr = dateRange.startDate.toISOString();
+                // Fetch extra days before start date to handle weekend logic correctly across months
+                const bufferStartDate = subDays(dateRange.startDate, 7);
+                const startStr = bufferStartDate.toISOString();
                 const endStr = dateRange.endDate.toISOString();
 
                 const [events, compOffs] = await Promise.all([
@@ -802,12 +804,11 @@ const AttendanceDashboard: React.FC = () => {
                 ]);
 
                 // Calculate Stats
-                const days = eachDayOfInterval({ start: dateRange.startDate, end: dateRange.endDate });
-                let present = 0;
-                let absent = 0;
-                let otHours = 0;
+                // Generate logs for extended period to ensure continuity for weekend rules
+                const extendedDays = eachDayOfInterval({ start: bufferStartDate, end: dateRange.endDate });
 
-                const logs = days.map(day => {
+                // 1. Generate Initial Logs (Extended)
+                let logs = extendedDays.map(day => {
                     const dateStr = format(day, 'yyyy-MM-dd');
                     const dayEvents = events.filter(e => format(new Date(e.timestamp), 'yyyy-MM-dd') === dateStr);
 
@@ -831,7 +832,6 @@ const AttendanceDashboard: React.FC = () => {
 
                     if (dayEvents.length > 0) {
                         status = 'Present';
-                        present++;
 
                         // Sort events
                         dayEvents.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
@@ -848,18 +848,13 @@ const AttendanceDashboard: React.FC = () => {
                                 const hours = diff / 60;
                                 if (hours > 8) {
                                     dailyOT = Math.round((hours - 8) * 10) / 10;
-                                    otHours += dailyOT;
                                 }
                             }
-                        }
-                    } else {
-                        // Only count absent if not holiday/weekend and date is in past/today
-                        if (status === 'Absent' && day <= new Date()) {
-                            absent++;
                         }
                     }
 
                     return {
+                        rawDate: day,
                         date: format(day, 'dd MMM, yyyy'),
                         day: dayName,
                         checkIn,
@@ -869,6 +864,31 @@ const AttendanceDashboard: React.FC = () => {
                     };
                 });
 
+                // 2. Apply Weekend Rule: If 4+ absences in the preceding week, mark Sunday as Absent
+                logs.forEach((log, index) => {
+                    if (log.status === 'Weekend' && log.day === 'Sunday') {
+                        let absentCount = 0;
+                        // Look back up to 6 days
+                        const lookBackLimit = Math.max(0, index - 6);
+                        for (let i = index - 1; i >= lookBackLimit; i--) {
+                            if (logs[i].status === 'Absent') {
+                                absentCount++;
+                            }
+                        }
+                        if (absentCount >= 4) {
+                            log.status = 'Absent';
+                        }
+                    }
+                });
+
+                // 3. Filter logs for the actual requested range
+                const displayLogs = logs.filter(l => l.rawDate >= dateRange.startDate!);
+
+                // 4. Calculate Final Stats based on displayLogs
+                const present = displayLogs.filter(l => l.status === 'Present').length;
+                const absent = displayLogs.filter(l => l.status === 'Absent' && l.rawDate <= new Date()).length;
+                const otHours = displayLogs.reduce((acc, l) => acc + l.ot, 0);
+
                 // Comp Offs (Count earned in this period)
                 const compOffCount = compOffs.filter(log => {
                     const d = new Date(log.dateEarned);
@@ -876,7 +896,7 @@ const AttendanceDashboard: React.FC = () => {
                 }).length;
 
                 setEmployeeStats({ present, absent, ot: Math.round(otHours * 10) / 10, compOff: compOffCount });
-                setEmployeeLogs(logs.reverse()); // Newest first
+                setEmployeeLogs(displayLogs.reverse()); // Newest first
 
             } catch (error) {
                 console.error("Failed to fetch employee attendance", error);
