@@ -21,7 +21,7 @@ const PendingApproval: React.FC = () => {
                 <Hourglass className="h-16 w-16 text-accent mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-primary-text mb-2">Account Pending Approval</h2>
                 <p className="text-muted mb-6">
-                    Welcome, {user?.name || 'user'}! Your account has been created successfully and is awaiting administrator approval. Please kindly contact the administrator to activate your account.
+                    Welcome, {user?.name || 'user'}! Your account has been created successfully and is pending approval. An administrator will review your details and perform a security check before activating your account.
                 </p>
                 <div className="flex justify-center">
                     <Button onClick={handleLogout} variant="secondary">

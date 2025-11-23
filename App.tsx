@@ -122,6 +122,8 @@ const IGNORED_PATH_PREFIXES = ['/auth', '/splash', '/pending-approval', '/forbid
 
 const shouldStorePath = (path: string) => {
   // ignore auth pages, splash, pending, forbidden or catch-all redirects
+  // Also ignore the root path '/' to prevent getting stuck on the redirector
+  if (path === '/' || path === '/#' || path === '/index.html') return false;
   return !IGNORED_PATH_PREFIXES.some(prefix => path.startsWith(prefix));
 };
 
@@ -368,11 +370,16 @@ const App: React.FC = () => {
       location.pathname === '/splash'
     )) {
       const lastPath = localStorage.getItem(LAST_PATH_KEY);
-      if (lastPath && shouldStorePath(lastPath)) {
+      // Only use lastPath if it exists AND is not the root path itself
+      if (lastPath && shouldStorePath(lastPath) && lastPath !== '/' && lastPath !== '/#') {
         localStorage.removeItem(LAST_PATH_KEY); // Clear after use
         navigate(lastPath, { replace: true });
       } else {
-        navigate('/profile', { replace: true });
+        if (user.role === 'unverified') {
+          navigate('/pending-approval', { replace: true });
+        } else {
+          navigate('/profile', { replace: true });
+        }
       }
     }
   }, [isInitialized, user, location.pathname, navigate, isLoginAnimationPending]);

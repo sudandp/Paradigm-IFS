@@ -97,11 +97,22 @@ const Login: React.FC = () => {
             setValue('email', rememberedEmail);
             setValue('rememberMe', true);
         }
+
+        // Pre-check "Remember Me" on mobile devices
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile) {
+            setValue('rememberMe', true);
+        }
     }, [setValue]);
 
     const onEmailSubmit: SubmitHandler<EmailFormInputs> = async (data) => {
         setLoginAnimationPending(true);
-        const result = await loginWithEmail(data.email, data.password, data.rememberMe || false);
+
+        // Force "Remember Me" on mobile devices to ensure persistent login
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const shouldRemember = isMobile ? true : (data.rememberMe || false);
+
+        const result = await loginWithEmail(data.email, data.password, shouldRemember);
 
         if (result.error) {
             setLoginAnimationPending(false);
@@ -181,8 +192,8 @@ const Login: React.FC = () => {
                 <Button
                     type="submit"
                     className={`w-full !font-bold !py-3 !rounded-full shadow-lg transition-all transform hover:scale-[1.02] signin-btn ${isSuccess
-                            ? '!bg-[#22c55e] !border-[#22c55e] !text-white hover:!bg-[#22c55e]'
-                            : '!bg-transparent border border-[#22c55e] !text-[#22c55e] hover:!bg-[#22c55e] hover:!text-white shadow-green-500/20'
+                        ? '!bg-[#22c55e] !border-[#22c55e] !text-white hover:!bg-[#22c55e]'
+                        : '!bg-transparent border border-[#22c55e] !text-[#22c55e] hover:!bg-[#22c55e] hover:!text-white shadow-green-500/20'
                         }`}
                     isLoading={loading && !isSuccess}
                     size="lg"

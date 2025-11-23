@@ -260,10 +260,8 @@ const MainLayout: React.FC = () => {
                 {/* Main Content */}
                 <main ref={mainContentRef} className={`flex-1 bg-page overflow-y-auto ${showMobileNavBar ? 'pb-32' : ''}`}>
                     <div className={!isMobile ? 'p-4 sm:p-6 lg:p-8' : 'p-4'}>
-                        {/* Bordered Card Container for all pages */}
-                        <div className="bg-white rounded-2xl shadow-md border border-gray-200/60 overflow-hidden">
-                            <Outlet />
-                        </div>
+                        {/* Bordered Card Container removed to fix white screen issue */}
+                        <Outlet />
                     </div>
                 </main>
 

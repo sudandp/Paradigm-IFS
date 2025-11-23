@@ -21,21 +21,21 @@ interface UpdatePasswordForm {
 }
 
 const getFriendlyAuthError = (errorCode: string): string => {
-    if (errorCode.includes('weak password')) {
-        return 'Password is too weak. It must be at least 6 characters long.';
-    }
-    if (errorCode.includes('requires a recent login')) {
-        return 'This action is sensitive and requires recent authentication. Please log in again before retrying.';
-    }
-    console.error("Unhandled Supabase auth error:", errorCode);
-    return 'An unexpected error occurred. Please try again.';
+  if (errorCode.includes('weak password')) {
+    return 'Password is too weak. It must be at least 6 characters long.';
+  }
+  if (errorCode.includes('requires a recent login')) {
+    return 'This action is sensitive and requires recent authentication. Please log in again before retrying.';
+  }
+  console.error("Unhandled Supabase auth error:", errorCode);
+  return 'An unexpected error occurred. Please try again.';
 };
 
 const UpdatePassword = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
 
   useEffect(() => {
     // With Supabase's PASSWORD_RECOVERY flow, the user is already authenticated
@@ -59,6 +59,7 @@ const UpdatePassword = () => {
       setError(getFriendlyAuthError(updateError.message));
     } else {
       setSuccess(true);
+      await logout();
       setTimeout(() => navigate('/auth/login', { replace: true }), 2000);
     }
   };
@@ -82,19 +83,19 @@ const UpdatePassword = () => {
 
   if (error && !user) { // If auth session is invalid
     return (
-        <div className="text-center">
-             <h3 className="text-3xl font-bold text-white">Invalid Session</h3>
-             <p className="text-sm text-gray-300 mt-1">{error}</p>
-             <div className="mt-6 flex flex-col gap-4">
-                <Link to="/auth/forgot-password" className="font-medium text-white/80 hover:text-white">
-                    Request a new link
-                </Link>
-                <div className="auth-separator">OR</div>
-                <Button onClick={() => navigate('/auth/login')} className="w-full" size="lg">
-                    Back to Sign In
-                </Button>
-            </div>
+      <div className="text-center">
+        <h3 className="text-3xl font-bold text-white">Invalid Session</h3>
+        <p className="text-sm text-gray-300 mt-1">{error}</p>
+        <div className="mt-6 flex flex-col gap-4">
+          <Link to="/auth/forgot-password" className="font-medium text-white/80 hover:text-white">
+            Request a new link
+          </Link>
+          <div className="auth-separator">OR</div>
+          <Button onClick={() => navigate('/auth/login')} className="w-full" size="lg">
+            Back to Sign In
+          </Button>
         </div>
+      </div>
     );
   }
 
@@ -109,7 +110,7 @@ const UpdatePassword = () => {
           autoComplete="new-password"
           registration={register('password')}
           error={errors.password?.message}
-           className="pl-4 !bg-white/10 !text-white !border-white/20 placeholder:!text-gray-300"
+          className="pl-4 !bg-white/10 !text-white !border-white/20 placeholder:!text-gray-300"
         />
         <Input
           id="confirmPassword"
@@ -118,7 +119,7 @@ const UpdatePassword = () => {
           autoComplete="new-password"
           registration={register('confirmPassword')}
           error={errors.confirmPassword?.message}
-           className="pl-4 !bg-white/10 !text-white !border-white/20 placeholder:!text-gray-300"
+          className="pl-4 !bg-white/10 !text-white !border-white/20 placeholder:!text-gray-300"
         />
         {error && <p className="text-sm text-red-400 text-center">{error}</p>}
         <div>
