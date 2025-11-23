@@ -73,7 +73,7 @@ const OTCalendar: React.FC = () => {
     const startDay = getDay(startOfMonth(currentDate)); // 0-6
 
     return (
-        <div className="md:bg-card md:p-3 md:rounded-xl md:shadow-card border border-border bg-white p-3 rounded-xl shadow-sm w-full max-w-[320px]">
+        <div className="md:bg-card md:p-3 md:rounded-xl md:shadow-card border border-border bg-white p-3 rounded-xl shadow-sm w-full">
             <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-primary-text">OT Calendar</h3>
                 <div className="flex items-center gap-1">
@@ -99,7 +99,7 @@ const OTCalendar: React.FC = () => {
                         const hasOT = ot > 0;
 
                         return (
-                            <div key={date.toISOString()} className={`aspect-square rounded border flex flex-col items-center justify-center transition-colors ${hasOT ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
+                            <div key={date.toISOString()} className={`aspect-square rounded border flex flex-col items-center justify-center transition-colors ${hasOT ? 'bg-blue-600 text-white border-blue-700 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
                                 <span className="text-xs font-semibold">{format(date, 'd')}</span>
                                 {hasOT && <span className="text-[8px] font-bold">+{ot}h</span>}
                             </div>
@@ -108,7 +108,7 @@ const OTCalendar: React.FC = () => {
                 </div>
             )}
             <div className="mt-3 flex gap-3 text-[10px] text-muted justify-center flex-wrap">
-                <div className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-100 border border-blue-300 rounded-sm"></div> Overtime (&gt;8h)</div>
+                <div className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-600 border border-blue-700 rounded-sm"></div> Overtime (&gt;8h)</div>
             </div>
         </div>
     );

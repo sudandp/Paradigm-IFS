@@ -16,7 +16,8 @@ import type {
     AttendanceSettings,
     OnboardingData,
     Organization,
-    UserRole
+    UserRole,
+    CompOffLog
 } from '../../types';
 import {
     format,
@@ -743,8 +744,8 @@ const AttendanceDashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const [dateRange, setDateRange] = useState<Range>({
-        startDate: subDays(new Date(), 6),
-        endDate: new Date(),
+        startDate: startOfMonth(new Date()),
+        endDate: endOfMonth(new Date()),
         key: 'selection'
     });
 
@@ -763,6 +764,12 @@ const AttendanceDashboard: React.FC = () => {
     const pdfRef = useRef<HTMLDivElement>(null);
 
     const canDownloadReport = user && permissions[user.role]?.includes('download_attendance_report');
+    const canViewAllAttendance = user && permissions[user.role]?.includes('view_all_attendance');
+    const isEmployeeView = !canViewAllAttendance;
+
+    // Employee View State
+    const [employeeStats, setEmployeeStats] = useState({ present: 0, absent: 0, ot: 0, compOff: 0 });
+    const [employeeLogs, setEmployeeLogs] = useState<any[]>([]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -779,6 +786,107 @@ const AttendanceDashboard: React.FC = () => {
             api.getUsers().then(setUsers);
         }
     }, [canDownloadReport]);
+
+    // Fetch Employee Data
+    useEffect(() => {
+        const fetchEmployeeData = async () => {
+            if (!isEmployeeView || !user || !dateRange.startDate || !dateRange.endDate) return;
+            setIsLoading(true);
+            try {
+                const startStr = dateRange.startDate.toISOString();
+                const endStr = dateRange.endDate.toISOString();
+
+                const [events, compOffs] = await Promise.all([
+                    api.getAttendanceEvents(user.id, startStr, endStr),
+                    api.getCompOffLogs(user.id)
+                ]);
+
+                // Calculate Stats
+                const days = eachDayOfInterval({ start: dateRange.startDate, end: dateRange.endDate });
+                let present = 0;
+                let absent = 0;
+                let otHours = 0;
+
+                const logs = days.map(day => {
+                    const dateStr = format(day, 'yyyy-MM-dd');
+                    const dayEvents = events.filter(e => format(new Date(e.timestamp), 'yyyy-MM-dd') === dateStr);
+
+                    let status = 'Absent';
+                    let checkIn = '-';
+                    let checkOut = '-';
+                    let dailyOT = 0;
+
+                    // Check Holidays/Weekends
+                    const dayName = format(day, 'EEEE');
+                    const isWeekend = dayName === 'Sunday';
+                    const isRecurringHoliday = recurringHolidays.some(rule => {
+                        if (rule.day.toLowerCase() !== dayName.toLowerCase()) return false;
+                        const occurrence = Math.ceil(day.getDate() / 7);
+                        const userRole = user.role === 'field_officer' ? 'field' : 'office'; // Map role
+                        return rule.n === occurrence && (rule.type || 'office') === userRole;
+                    });
+
+                    if (isRecurringHoliday) status = 'Holiday';
+                    else if (isWeekend) status = 'Weekend';
+
+                    if (dayEvents.length > 0) {
+                        status = 'Present';
+                        present++;
+
+                        // Sort events
+                        dayEvents.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+                        const checkInEvent = dayEvents.find(e => e.type === 'check-in');
+                        const checkOutEvent = dayEvents.find(e => e.type === 'check-out');
+
+                        if (checkInEvent) checkIn = format(new Date(checkInEvent.timestamp), 'hh:mm a');
+                        if (checkOutEvent) {
+                            checkOut = format(new Date(checkOutEvent.timestamp), 'hh:mm a');
+
+                            // Calculate OT (if > 8 hours)
+                            if (checkInEvent) {
+                                const diff = differenceInMinutes(new Date(checkOutEvent.timestamp), new Date(checkInEvent.timestamp));
+                                const hours = diff / 60;
+                                if (hours > 8) {
+                                    dailyOT = Math.round((hours - 8) * 10) / 10;
+                                    otHours += dailyOT;
+                                }
+                            }
+                        }
+                    } else {
+                        // Only count absent if not holiday/weekend and date is in past/today
+                        if (status === 'Absent' && day <= new Date()) {
+                            absent++;
+                        }
+                    }
+
+                    return {
+                        date: format(day, 'dd MMM, yyyy'),
+                        day: dayName,
+                        checkIn,
+                        checkOut,
+                        status,
+                        ot: dailyOT
+                    };
+                });
+
+                // Comp Offs (Count earned in this period)
+                const compOffCount = compOffs.filter(log => {
+                    const d = new Date(log.dateEarned);
+                    return d >= dateRange.startDate! && d <= dateRange.endDate! && log.status === 'earned';
+                }).length;
+
+                setEmployeeStats({ present, absent, ot: Math.round(otHours * 10) / 10, compOff: compOffCount });
+                setEmployeeLogs(logs.reverse()); // Newest first
+
+            } catch (error) {
+                console.error("Failed to fetch employee attendance", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchEmployeeData();
+    }, [isEmployeeView, user, dateRange, recurringHolidays]);
 
     const fetchDashboardData = useCallback(async (startDate: Date, endDate: Date) => {
         setIsLoading(true);
@@ -1263,8 +1371,116 @@ const AttendanceDashboard: React.FC = () => {
         }
     };
 
-    if (isLoading && !dashboardData) {
+    if (isLoading && !dashboardData && !isEmployeeView) {
         return <div className="flex justify-center items-center h-96"><Loader2 className="h-8 w-8 animate-spin text-accent" /></div>;
+    }
+
+    if (isEmployeeView) {
+        return (
+            <div className="p-4 space-y-6 pb-24">
+                <div className="flex flex-col gap-4">
+                    <h2 className="text-2xl font-bold text-primary-text">My Attendance</h2>
+
+                    {/* Date Filter */}
+                    <div className="bg-card p-3 rounded-xl shadow-sm border border-border flex flex-wrap items-center gap-2">
+                        {['This Month', 'Last 30 Days'].map(filter => (
+                            <Button
+                                key={filter}
+                                type="button"
+                                onClick={() => handleSetDateFilter(filter)}
+                                className={activeDateFilter === filter
+                                    ? "text-white shadow-md border"
+                                    : "bg-card text-primary-text border border-border hover:bg-accent-light"
+                                }
+                                style={activeDateFilter === filter ? { backgroundColor: '#006B3F', borderColor: '#005632' } : {}}
+                            >
+                                {filter}
+                            </Button>
+                        ))}
+                        <div className="relative" ref={datePickerRef}>
+                            <Button type="button" variant="outline" onClick={() => setIsDatePickerOpen(!isDatePickerOpen)} className="hover:bg-accent-light text-primary-text border-border">
+                                <Calendar className="mr-2 h-4 w-4" />
+                                <span>
+                                    {activeDateFilter === 'Custom'
+                                        ? `${format(dateRange.startDate!, 'dd MMM')} - ${format(dateRange.endDate!, 'dd MMM')}`
+                                        : 'Custom'}
+                                </span>
+                            </Button>
+                            {isDatePickerOpen && (
+                                <div className="absolute top-full left-0 mt-2 z-10 bg-card border border-border rounded-lg shadow-lg">
+                                    <DateRangePicker
+                                        onChange={handleCustomDateChange}
+                                        months={1}
+                                        ranges={dateRangeArray}
+                                        direction="horizontal"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-card p-4 rounded-xl shadow-sm border border-border flex flex-col items-center justify-center text-center">
+                        <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-full mb-2"><UserCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" /></div>
+                        <p className="text-xs text-muted font-medium">Present</p>
+                        <p className="text-xl font-bold text-primary-text">{employeeStats.present}</p>
+                    </div>
+                    <div className="bg-card p-4 rounded-xl shadow-sm border border-border flex flex-col items-center justify-center text-center">
+                        <div className="p-2 bg-rose-100 dark:bg-rose-900/30 rounded-full mb-2"><UserX className="h-5 w-5 text-rose-600 dark:text-rose-400" /></div>
+                        <p className="text-xs text-muted font-medium">Absent</p>
+                        <p className="text-xl font-bold text-primary-text">{employeeStats.absent}</p>
+                    </div>
+                    <div className="bg-card p-4 rounded-xl shadow-sm border border-border flex flex-col items-center justify-center text-center">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-2"><Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" /></div>
+                        <p className="text-xs text-muted font-medium">Overtime</p>
+                        <p className="text-xl font-bold text-primary-text">{employeeStats.ot}h</p>
+                    </div>
+                    <div className="bg-card p-4 rounded-xl shadow-sm border border-border flex flex-col items-center justify-center text-center">
+                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-full mb-2"><TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" /></div>
+                        <p className="text-xs text-muted font-medium">Comp Offs</p>
+                        <p className="text-xl font-bold text-primary-text">{employeeStats.compOff}</p>
+                    </div>
+                </div>
+
+                {/* Logs List */}
+                <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+                    <div className="p-4 border-b border-border font-semibold text-primary-text">Attendance Logs</div>
+                    <div className="divide-y divide-border">
+                        {isLoading ? (
+                            <div className="p-8 text-center text-muted"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>
+                        ) : employeeLogs.length === 0 ? (
+                            <div className="p-8 text-center text-muted">No records found for this period.</div>
+                        ) : (
+                            employeeLogs.map((log, idx) => (
+                                <div key={idx} className="p-4 flex items-center justify-between">
+                                    <div>
+                                        <p className="font-medium text-primary-text">{log.date}</p>
+                                        <p className="text-xs text-muted">{log.day}</p>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-1">
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide
+                                            ${log.status === 'Present' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                                                log.status === 'Absent' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
+                                                    log.status === 'Holiday' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                                                        'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}`}>
+                                            {log.status}
+                                        </span>
+                                        <div className="text-xs text-muted font-medium">
+                                            {log.checkIn} - {log.checkOut}
+                                        </div>
+                                        {log.ot > 0 && (
+                                            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold">+{log.ot}h OT</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (

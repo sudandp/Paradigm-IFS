@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import { ShieldAlert } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
 
 const Forbidden: React.FC = () => {
     const navigate = useNavigate();
@@ -18,7 +19,10 @@ const Forbidden: React.FC = () => {
                 </p>
                 <div className="flex justify-center gap-4">
                     <Button onClick={() => navigate(-1)} variant="secondary">Go Back</Button>
-                    <Button onClick={() => navigate('/auth/login')}>Login</Button>
+                    <Button onClick={async () => {
+                        await useAuthStore.getState().logout();
+                        navigate('/auth/login');
+                    }}>Login</Button>
                 </div>
             </div>
         </div>

@@ -33,7 +33,7 @@ const CompOffCalendar: React.FC<CompOffCalendarProps> = ({ logs, isLoading = fal
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'earned': return 'bg-blue-100 text-blue-800 border-blue-300'; // Vibrant Blue for Comp Off
+            case 'earned': return 'bg-blue-600 text-white border-blue-700 shadow-sm'; // Vibrant Blue for Comp Off
             default: return 'bg-gray-50 text-gray-400 border-gray-100'; // Neutral
         }
     };
@@ -75,7 +75,7 @@ const CompOffCalendar: React.FC<CompOffCalendarProps> = ({ logs, isLoading = fal
                 </div>
             )}
             <div className="mt-3 flex gap-3 text-xs text-muted justify-center">
-                <div className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-100 border border-blue-300 rounded-sm"></div> Comp Off Earned</div>
+                <div className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-600 border border-blue-700 rounded-sm"></div> Comp Off Earned</div>
             </div>
         </div>
     );

@@ -101,7 +101,10 @@ const ProfilePage: React.FC = () => {
 
         if (cameraOk && locationOk) {
             setPermissionStatus('granted');
-            setToast({ message: 'Camera and Location permissions granted!', type: 'success' });
+            // Only show toast if we were not already granted
+            if (permissionStatus !== 'granted') {
+                setToast({ message: 'Camera and Location permissions granted!', type: 'success' });
+            }
         } else {
             setPermissionStatus('denied');
             let message = 'Permissions were not fully granted. ';
