@@ -52,6 +52,10 @@ export default defineConfig({
     })
   ],
 
+  define: {
+    '__DEFINES__': JSON.stringify({}),
+    '__HMR_CONFIG_NAME__': JSON.stringify('null'),
+  },
   resolve: {
     alias: {
       '@/services': path.resolve(__dirname, './services'),
