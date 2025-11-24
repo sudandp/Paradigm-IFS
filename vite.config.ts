@@ -10,6 +10,10 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      filename: 'manifest.json',
+      devOptions: {
+        enabled: true
+      },
       manifest: {
         name: 'Paradigm IFS',
         short_name: 'Paradigm',
@@ -46,6 +50,9 @@ export default defineConfig({
       }
     })
   ],
+  define: {
+    '__DEFINES__': {}
+  },
   resolve: {
     alias: {
       '@/services': path.resolve(__dirname, './services'),
