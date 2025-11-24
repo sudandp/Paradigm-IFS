@@ -23,16 +23,16 @@ const getFriendlyAuthError = (errorMessage: string): string => {
         return 'Network issue please check your network';
     }
     if (errorMessage.includes('Invalid login credentials')) {
-        return 'Invalid email or password. Please try again.';
+        return 'Invalid email or password. If you signed up with Google, please use the "Sign in with Google" button.';
     }
     if (errorMessage.includes('User already registered')) {
         return 'An account with this email address already exists. Please sign in or reset your password.';
     }
     if (errorMessage.includes('Email not confirmed')) {
-        return 'Please confirm your email address before logging in.';
+        return 'Please confirm your email address before logging in. Check your inbox for the confirmation link.';
     }
     if (errorMessage.includes('too many requests')) {
-        return 'Too many attempts. Please try again later or reset your password.';
+        return 'Too many login attempts. Please wait a few minutes or reset your password.';
     }
     console.error("Unhandled Supabase auth error:", errorMessage);
     return 'An unexpected error occurred. Please try again or contact support.';
@@ -100,6 +100,15 @@ export const useAuthStore = create<AuthState>()(
 
         loginWithEmail: async (email, password, rememberMe) => {
             set({ error: null, loading: true });
+
+            // Ensure a clean state before attempting login. This helps if there's a stale session
+            // lingering that might confuse the client or the user.
+            try {
+                await authService.signOut();
+            } catch (e) {
+                // Ignore signout errors, we just want to try to clear state
+            }
+
             try {
                 const { data, error } = await withTimeout(
                     authService.signInWithPassword(email, password),
