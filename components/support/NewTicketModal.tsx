@@ -100,48 +100,38 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose, onSucc
   // Mobile Full-Screen View
   if (isMobile) {
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col !bg-[#0d1f12] text-white animate-fade-in-scale">
-        <header className="p-4 flex-shrink-0 flex items-center gap-4 border-b border-white/10">
+      <div className="fixed inset-0 z-50 flex flex-col bg-[#0f1f0f] text-white animate-fade-in-scale">
+        <header className="p-4 flex-shrink-0 flex items-center gap-4 border-b border-[#374151]">
           <Button variant="icon" onClick={onClose} aria-label="Close form"><ArrowLeft className="h-6 w-6" /></Button>
           <h3 className="text-lg font-semibold">Create New Post</h3>
         </header>
 
         <form id={formId} onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-4 space-y-4">
-          <Input
-            placeholder="Title / Subject"
-            {...register('title')}
-            error={errors.title?.message}
-            className="form-input bg-[#152b1b] border-white/10 text-white placeholder-white/40 focus:border-emerald-500 focus:ring-emerald-500"
-          />
-          <textarea
-            placeholder="Description"
-            {...register('description')}
-            rows={5}
-            className={`form-input bg-[#152b1b] border-white/10 text-white placeholder-white/40 focus:border-emerald-500 focus:ring-emerald-500 ${errors.description ? 'form-input--error' : ''}`}
-          />
+          <Input placeholder="Title / Subject" {...register('title')} error={errors.title?.message} className="form-input" />
+          <textarea placeholder="Description" {...register('description')} rows={5} className={`form-input ${errors.description ? 'form-input--error' : ''}`} />
 
           <Controller name="category" control={control} render={({ field }) => (
-            <Select {...field} error={errors.category?.message} className="pro-select pro-select-arrow bg-[#152b1b] border-white/10 text-white focus:border-emerald-500 focus:ring-emerald-500">
-              <option className="bg-[#0d1f12]">Software Developer</option>
-              <option className="bg-[#0d1f12]">Admin</option>
-              <option className="bg-[#0d1f12]">Operational</option>
-              <option className="bg-[#0d1f12]">HR Query</option>
-              <option className="bg-[#0d1f12]">Other</option>
+            <Select {...field} error={errors.category?.message} className="pro-select pro-select-arrow">
+              <option>Software Developer</option>
+              <option>Admin</option>
+              <option>Operational</option>
+              <option>HR Query</option>
+              <option>Other</option>
             </Select>
           )} />
           <Controller name="priority" control={control} render={({ field }) => (
-            <Select {...field} error={errors.priority?.message} className="pro-select pro-select-arrow bg-[#152b1b] border-white/10 text-white focus:border-emerald-500 focus:ring-emerald-500">
-              <option className="bg-[#0d1f12]">Low</option>
-              <option className="bg-[#0d1f12]">Medium</option>
-              <option className="bg-[#0d1f12]">High</option>
-              <option className="bg-[#0d1f12]">Urgent</option>
+            <Select {...field} error={errors.priority?.message} className="pro-select pro-select-arrow">
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+              <option>Urgent</option>
             </Select>
           )} />
           <Controller name="assignedToId" control={control} render={({ field }) => (
-            <Select {...field} value={field.value ?? ''} error={errors.assignedToId?.message} className="pro-select pro-select-arrow bg-[#152b1b] border-white/10 text-white focus:border-emerald-500 focus:ring-emerald-500">
-              <option value="" className="bg-[#0d1f12]">Unassigned</option>
+            <Select {...field} value={field.value ?? ''} error={errors.assignedToId?.message} className="pro-select pro-select-arrow">
+              <option value="">Unassigned</option>
               {assignableUsers.map(u => (
-                <option key={u.id} value={u.id} className="bg-[#0d1f12]">{u.name} ({u.role.replace(/_/g, ' ')})</option>
+                <option key={u.id} value={u.id}>{u.name} ({u.role.replace(/_/g, ' ')})</option>
               ))}
             </Select>
           )} />
@@ -160,7 +150,7 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose, onSucc
           />
         </form>
 
-        <footer className="p-4 flex-shrink-0 flex items-center justify-end gap-3 border-t border-white/10">
+        <footer className="p-4 flex-shrink-0 flex items-center justify-end gap-3 border-t border-[#374151]">
           <Button type="button" onClick={onClose} variant="secondary">Cancel</Button>
           <Button type="submit" form={formId} isLoading={isSubmitting}>Create Post</Button>
         </footer>

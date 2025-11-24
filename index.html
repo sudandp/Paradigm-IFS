@@ -2,6 +2,13 @@
 <html lang="en">
 
 <head>
+  <script type="module">import { injectIntoGlobalHook } from "/@react-refresh";
+    injectIntoGlobalHook(window);
+    window.$RefreshReg$ = () => { };
+    window.$RefreshSig$ = () => (type) => type;</script>
+
+  <script type="module" src="/@vite/client"></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Paradigm Employee Onboarding</title>
@@ -1109,15 +1116,10 @@
       /* Menu items in mobile drawer */
       nav a,
       nav button:not(.btn) {
-        color: #22c55e !important;
         transition: all 0.3s ease !important;
       }
 
-      nav a:hover,
-      nav button:not(.btn):hover {
-        background-color: rgba(34, 197, 94, 0.1) !important;
-        color: #ffffff !important;
-      }
+
 
       /* Fix delete button on profile picture */
       button[class*="delete"],
