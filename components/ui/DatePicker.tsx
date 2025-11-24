@@ -3,6 +3,8 @@ import { Calendar } from 'react-date-range';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
+import { useThemeStore } from '../../store/themeStore';
+
 interface DatePickerProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
   label: string;
   id: string;
@@ -17,6 +19,8 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, id, error, value, onChan
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileTheme, setIsMobileTheme] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     setIsMobileTheme(document.body.classList.contains('field-officer-dark-theme'));
@@ -39,10 +43,11 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, id, error, value, onChan
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const { className, ...otherProps } = props;
   const baseClass = isMobileTheme ? 'fo-input' : 'form-input';
   const errorClass = isMobileTheme ? 'fo-input--error' : 'form-input--error';
-  const finalClassName = `${baseClass} ${error ? errorClass : ''} flex justify-between items-center cursor-pointer`;
-  
+  const finalClassName = `${baseClass} ${error ? errorClass : ''} flex justify-between items-center cursor-pointer ${className || ''}`;
+
   // A date needs to be provided to the calendar. Use the value, or today as a fallback.
   // Add a time component to avoid timezone issues where the date might be off by one.
   const selectedDate = value ? new Date(value + 'T12:00:00') : new Date();
@@ -51,9 +56,9 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, id, error, value, onChan
     <div ref={pickerRef}>
       {label && <label htmlFor={id} className="block text-sm font-medium text-muted">{label}</label>}
       <div className={label ? "mt-1 relative" : "relative"}>
-        <div 
-          id={id} 
-          className={finalClassName} 
+        <div
+          id={id}
+          className={finalClassName}
           onClick={() => setIsOpen(!isOpen)}
           // Add ARIA attributes for accessibility
           role="button"
@@ -65,13 +70,13 @@ const DatePicker: React.FC<DatePickerProps> = ({ label, id, error, value, onChan
           <CalendarIcon className="h-4 w-4 text-muted" />
         </div>
         {isOpen && (
-          <div className="absolute z-10 mt-1 bg-card border border-border rounded-lg shadow-lg">
+          <div className={`absolute z-10 mt-1 rounded-lg shadow-lg overflow-hidden ${isDark ? 'dark-calendar bg-[#041b0f] border border-white/10' : 'bg-card border border-border'}`}>
             <Calendar
               date={selectedDate}
               onChange={handleDateChange}
               maxDate={maxDate}
               minDate={minDate}
-              color="#005D22"
+              color={isDark ? "#10B981" : "#005D22"}
             />
           </div>
         )}
