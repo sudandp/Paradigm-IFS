@@ -2,18 +2,16 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, Navigate, useLocation } from 'react-router-dom';
-import { ChevronsLeft, ChevronsRight, ChevronDown, ChevronUp, ShieldCheck, LayoutDashboard, ClipboardCheck, Map as MapIcon, ClipboardList, User, Briefcase, ListTodo, Building, Users, Shirt, Settings, GitBranch, Calendar, CalendarCheck2, ShieldHalf, FileDigit, GitPullRequest, Home, BriefcaseBusiness, UserPlus, ArrowLeft, IndianRupee, PackagePlus, LifeBuoy, MapPin, X } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, ChevronDown, ChevronUp, ShieldCheck, LayoutDashboard, ClipboardCheck, Map as MapIcon, ClipboardList, User, Briefcase, ListTodo, Building, Users, Shirt, Settings, GitBranch, Calendar, CalendarCheck2, ShieldHalf, FileDigit, GitPullRequest, Home, BriefcaseBusiness, UserPlus, IndianRupee, PackagePlus, LifeBuoy, MapPin } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { usePermissionsStore } from '../../store/permissionsStore';
 import Logo from '../ui/Logo';
 import type { Permission } from '../../types';
 import Button from '../ui/Button';
 import { useUiSettingsStore } from '../../store/uiSettingsStore';
-import MobileNavBar from './MobileNavBar';
 import { useNotificationStore } from '../../store/notificationStore';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import Header from './Header';
-import { api } from '../../services/api';
 
 export interface NavLinkConfig {
     to: string;
@@ -65,7 +63,7 @@ const SidebarContent: React.FC<{ isCollapsed: boolean, onLinkClick?: () => void,
     return (
         <div className="flex flex-col">
             {!hideHeader && (
-                <div className={`p-4 border-b border-white/10 bg-white flex justify-center h-16 items-center transition-all duration-300 flex-shrink-0`}>
+                <div className="p-4 border-b border-gray-200 bg-white flex justify-center h-16 items-center transition-all duration-300 flex-shrink-0">
                     {isCollapsed ? (
                         <ShieldCheck className="h-8 w-8 text-accent" />
                     ) : (
@@ -126,7 +124,6 @@ const MainLayout: React.FC = () => {
     const mainContentRef = useRef<HTMLDivElement>(null);
     const pageScrollIntervalRef = useRef<number | null>(null);
 
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [scrollPosition, setScrollPosition] = useState(0);
     const [showScrollButtons, setShowScrollButtons] = useState(false);
@@ -178,23 +175,10 @@ const MainLayout: React.FC = () => {
 
 
     useEffect(() => {
-        const body = document.body;
-        if (isMobileMenuOpen) {
-            body.style.overflow = 'hidden';
-        } else {
-            body.style.overflow = '';
-        }
-        return () => { body.style.overflow = ''; };
-    }, [isMobileMenuOpen]);
-
-    useEffect(() => {
         if (user) {
             fetchNotifications();
         }
     }, [user, fetchNotifications]);
-
-    const hideNavPaths = ['/onboarding/add'];
-    const showMobileNavBar = isMobile && !hideNavPaths.some(path => location.pathname.startsWith(path));
 
     if (!user) {
         return <Navigate to="/auth/login" replace />;
@@ -207,71 +191,46 @@ const MainLayout: React.FC = () => {
         // ensures the container grows as needed instead of forcing a fixed height.
         <div className={`flex min-h-screen bg-page ${!isMobile ? 'p-4 md:p-6 lg:p-8 gap-4 md:gap-6 lg:gap-8' : ''}`}>
 
-            {/* Desktop Sidebar */}
-            {!isMobile && (
-                <aside className={`hidden md:flex md:flex-col md:flex-shrink-0 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-20' : 'w-72'} bg-white border-r border-gray-200/60`}>
-                    <div className="flex-1 overflow-y-auto overflow-x-hidden">
-                        <SidebarContent isCollapsed={isSidebarCollapsed} mode="light" />
-                    </div>
-                    <div className="flex-shrink-0 px-2 pt-2 border-t border-border mt-auto flex items-center">
-                        <button
-                            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                            className="flex-1 flex items-center justify-center p-2 rounded-lg text-muted hover:bg-page transition-colors"
-                            title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                        >
-                            {isSidebarCollapsed ? <ChevronsRight className="h-5 w-5" /> : <ChevronsLeft className="h-5 w-5" />}
-                        </button>
-                    </div>
-                </aside>
-            )}
-
-            {/* Mobile Sidebar & Backdrop */}
-            {isMobileMenuOpen && (
-                <>
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onClick={() => setIsMobileMenuOpen(false)} aria-hidden="true"></div>
-                    <aside
-                        className="fixed inset-y-0 left-0 w-80 bg-[#0d1f12] z-40 transform transition-transform duration-300 ease-in-out md:hidden shadow-2xl flex flex-col border-r border-white/10"
-                        style={{ transform: isMobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)' }}
-                    >
-                        <div className="p-4 flex justify-center h-20 items-center flex-shrink-0 !bg-white shadow-sm">
-                            <Logo />
-                        </div>
-                        <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
-                            <SidebarContent isCollapsed={false} onLinkClick={() => setIsMobileMenuOpen(false)} hideHeader={true} mode="dark" />
-                        </div>
-                        <div className="p-4 border-t border-white/10 mt-auto flex-shrink-0 bg-[#0a1a10]">
-                            <button
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="relative w-full flex items-center justify-center p-3.5 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-all duration-200 group"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-                                    <span className="font-medium">Close Menu</span>
-                                </div>
-                                <X className="absolute right-3.5 h-5 w-5 text-red-500" />
-                            </button>
-                        </div>
-                    </aside>
-                </>
-            )}
-
-            <div className={`flex-1 flex flex-col ${!isMobile ? 'bg-gray-50/50' : ''}`}>
-                <Header
-                    setIsMobileMenuOpen={setIsMobileMenuOpen}
+            {/* Backdrop for mobile when sidebar is expanded */}
+            {isMobile && !isSidebarCollapsed && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-20 transition-opacity duration-300"
+                    onClick={() => setIsSidebarCollapsed(true)}
                 />
+            )}
+
+            {/* Sidebar - Overlay on mobile, fixed on desktop */}
+            <aside className={`flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out ${isMobile ? (isSidebarCollapsed ? 'w-16' : 'w-64') : (isSidebarCollapsed ? 'w-20' : 'w-72')} ${isMobile ? 'bg-[#041b0f] border-r border-[#1f3d2b]' : 'bg-white border-r border-gray-200/60'} ${isMobile ? 'fixed left-0 top-0 bottom-0 z-30' : ''}`}>
+                <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                    <SidebarContent
+                        isCollapsed={isSidebarCollapsed}
+                        mode={isMobile ? "dark" : "light"}
+                        onLinkClick={isMobile ? () => setIsSidebarCollapsed(true) : undefined}
+                    />
+                </div>
+                <div className={`flex-shrink-0 px-2 pt-2 mt-auto flex items-center ${isMobile ? 'border-t border-[#1f3d2b]' : 'border-t border-border'}`}>
+                    <button
+                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                        className={`flex-1 flex items-center justify-center p-2 rounded-lg transition-colors ${isMobile ? 'text-white/70 hover:bg-white/10' : 'text-muted hover:bg-page'}`}
+                        title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                    >
+                        {isSidebarCollapsed ? <ChevronsRight className="h-5 w-5" /> : <ChevronsLeft className="h-5 w-5" />}
+                    </button>
+                </div>
+            </aside>
+
+            <div className={`flex-1 flex flex-col ${isMobile ? 'bg-[#041b0f]' : 'bg-gray-50/50'} ${isMobile && isSidebarCollapsed ? 'ml-16' : ''}`}>
+                <Header />
 
                 {/* Main Content */}
-                <main ref={mainContentRef} className={`flex-1 bg-page overflow-y-auto ${showMobileNavBar ? 'pb-32' : ''}`}>
-                    <div className={!isMobile ? 'p-4 sm:p-6 lg:p-8' : 'p-4'}>
+                <main ref={mainContentRef} className={`flex-1 overflow-y-auto ${isMobile ? 'bg-[#041b0f]' : 'bg-page'}`}>
+                    <div className="p-4">
                         {/* Bordered Card Container removed to fix white screen issue */}
                         <Outlet />
                     </div>
                 </main>
 
             </div>
-            {showMobileNavBar && user && (
-                <MobileNavBar />
-            )}
             {/* Scroll-to-top/bottom buttons */}
             {showScrollButtons && !isMobile && (
                 <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-2 no-print">

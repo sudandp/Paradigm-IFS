@@ -11,7 +11,7 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { ProfilePlaceholder } from '../ui/ProfilePlaceholder';
 
 interface HeaderProps {
-    setIsMobileMenuOpen: (isOpen: boolean) => void;
+    setIsMobileMenuOpen?: (isOpen: boolean) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ setIsMobileMenuOpen }) => {
@@ -39,7 +39,7 @@ const Header: React.FC<HeaderProps> = ({ setIsMobileMenuOpen }) => {
     }
 
     const handleLogoutClick = () => {
-        setIsMobileMenuOpen(false);
+        setIsMobileMenuOpen?.(false);
         setIsUserMenuOpen(false);
         setIsLogoutModalOpen(true);
     };
@@ -64,11 +64,11 @@ const Header: React.FC<HeaderProps> = ({ setIsMobileMenuOpen }) => {
             >
                 Are you sure you want to log out?
             </Modal>
-            <header className="sticky top-0 z-30 bg-transparent md:bg-white/80 md:backdrop-blur-md border-b border-transparent md:border-gray-200/50 transition-all duration-200">
+            <header className="sticky top-0 z-30 bg-[#0d2818] md:bg-gray-50/50 backdrop-blur-md border-b border-[#1f3d2b] md:border-gray-200/50 transition-all duration-200">
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center h-16">
                         <div className="flex-none md:hidden w-10">
-                            <button onClick={handleMobileExit} className="btn-icon inline-flex items-center justify-center p-2 rounded-md text-muted hover:bg-page focus:outline-none" aria-label="Go to profile page">
+                            <button onClick={handleMobileExit} className="btn-icon inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-white/10 focus:outline-none" aria-label="Go to profile page">
                                 <span className="sr-only">Go to profile</span>
                                 <ArrowLeft className="block h-6 w-6" />
                             </button>

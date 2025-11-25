@@ -326,24 +326,24 @@ const ProfilePage: React.FC = () => {
                                 <div className="flex items-center justify-center text-muted h-[56px]"><Loader2 className="h-6 w-6 animate-spin" /></div>
                             ) : (
                                 <div className="flex gap-3">
-                                    <Button 
+                                    <Button
                                         onClick={() => {
                                             setConfirmationAction('check-in');
                                             setIsConfirmationModalOpen(true);
-                                        }} 
-                                        variant="primary" 
-                                        className="flex-1 !py-4 text-lg font-bold shadow-lg transition-all rounded-2xl" 
+                                        }}
+                                        variant="primary"
+                                        className="flex-1 !py-4 text-lg font-bold shadow-lg transition-all rounded-2xl"
                                         disabled={isCheckedIn || isActionInProgress}
                                     >
                                         <LogIn className="mr-3 h-6 w-6" /> Check In
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={() => {
                                             setConfirmationAction('check-out');
                                             setIsConfirmationModalOpen(true);
-                                        }} 
-                                        variant="danger" 
-                                        className="flex-1 !py-4 text-lg font-bold shadow-lg transition-all rounded-2xl" 
+                                        }}
+                                        variant="danger"
+                                        className="flex-1 !py-4 text-lg font-bold shadow-lg transition-all rounded-2xl"
                                         disabled={!isCheckedIn || isActionInProgress}
                                     >
                                         <LogOut className="mr-3 h-6 w-6" /> Check Out
@@ -389,12 +389,12 @@ const ProfilePage: React.FC = () => {
             </Modal>
 
             <div className="relative overflow-hidden md:bg-white md:p-6 md:rounded-2xl md:shadow-lg flex flex-col md:flex-row items-center gap-6 border border-gray-100">
-                <div className="absolute top-0 left-0 w-full h-32 bg-[#006B3F] border-b-4 border-[#005632] shadow-lg"></div>
+                <div className="absolute top-0 left-0 w-full h-32 bg-gray-50 border-b-4 border-gray-200 shadow-lg"></div>
                 <div className="relative z-10">
                     <AvatarUpload file={avatarFile} onFileChange={handlePhotoChange} />
                 </div>
                 <div className="text-center md:text-left relative z-10 flex-1 mt-16 md:mt-0">
-                    <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{user.name}</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold text-primary-text tracking-tight">{user.name}</h2>
                     <div className="flex items-center justify-center md:justify-start gap-2 mt-1.5">
                         <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs md:text-sm font-medium">
                             {getRoleName(user.role)}
@@ -450,24 +450,24 @@ const ProfilePage: React.FC = () => {
                                 <div className="flex items-center justify-center h-[56px] bg-gray-50 rounded-xl"><Loader2 className="h-6 w-6 animate-spin text-gray-400" /></div>
                             ) : (
                                 <div className="flex gap-4">
-                                    <Button 
+                                    <Button
                                         onClick={() => {
                                             setConfirmationAction('check-in');
                                             setIsConfirmationModalOpen(true);
-                                        }} 
-                                        variant="primary" 
-                                        className="flex-1 !py-3 text-base md:text-lg shadow-lg shadow-emerald-100 hover:shadow-emerald-200 transition-all" 
+                                        }}
+                                        variant="primary"
+                                        className="flex-1 !py-3 text-base md:text-lg shadow-lg shadow-emerald-100 hover:shadow-emerald-200 transition-all"
                                         disabled={isCheckedIn || isActionInProgress}
                                     >
                                         <LogIn className="mr-2 h-5 w-5" /> Check In
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={() => {
                                             setConfirmationAction('check-out');
                                             setIsConfirmationModalOpen(true);
-                                        }} 
-                                        variant="danger" 
-                                        className="flex-1 !py-3 text-base md:text-lg shadow-lg shadow-red-100 hover:shadow-red-200 transition-all" 
+                                        }}
+                                        variant="danger"
+                                        className="flex-1 !py-3 text-base md:text-lg shadow-lg shadow-red-100 hover:shadow-red-200 transition-all"
                                         disabled={!isCheckedIn || isActionInProgress}
                                     >
                                         <LogOut className="mr-2 h-5 w-5" /> Check Out

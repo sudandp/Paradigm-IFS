@@ -216,7 +216,7 @@ const AttendanceSettings: React.FC = () => {
                                 } catch (error) {
                                     setToast({ message: 'Failed to add recurring holiday.', type: 'error' });
                                 }
-                            }} className="w-full sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Add Rule</Button>
+                            }} size="sm" className="w-auto"><Plus className="mr-2 h-4 w-4" /> Add Rule</Button>
                         </div>
                     </div>
                     <div className="mt-4 space-y-2">
@@ -255,7 +255,7 @@ const AttendanceSettings: React.FC = () => {
                         <form onSubmit={handleAddHoliday} className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                             <Input label="Holiday Name" id="holidayName" value={newHolidayName} onChange={e => setNewHolidayName(e.target.value)} />
                             <DatePicker label="Date" id="holidayDate" value={newHolidayDate} onChange={setNewHolidayDate} />
-                            <Button type="submit" className="w-full sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Add</Button>
+                            <Button type="submit" size="sm" className="w-auto"><Plus className="mr-2 h-4 w-4" /> Add</Button>
                         </form>
                     </div>
                     <div className="mt-4 space-y-2">

@@ -100,7 +100,7 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose, onSucc
   // Mobile Full-Screen View
   if (isMobile) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-[#0f1f0f] text-white animate-fade-in-scale">
+      <div className="fixed inset-0 z-[100] flex flex-col bg-[#0f1f0f] text-white animate-fade-in-scale">
         <header className="p-4 flex-shrink-0 flex items-center gap-4 border-b border-[#374151]">
           <Button variant="icon" onClick={onClose} aria-label="Close form"><ArrowLeft className="h-6 w-6" /></Button>
           <h3 className="text-lg font-semibold">Create New Post</h3>
@@ -160,7 +160,7 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose, onSucc
 
   // Desktop Modal View
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-60 p-4" onClick={onClose}>
       <div className="bg-card rounded-xl shadow-card w-full max-w-lg m-4 animate-fade-in-scale flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b flex-shrink-0">
           <h3 className="text-lg font-bold text-primary-text">Create New Post</h3>
