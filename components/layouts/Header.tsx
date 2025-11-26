@@ -70,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({ setIsMobileMenuOpen }) => {
                         <div className="flex-1 flex justify-center md:justify-start min-w-0 px-2">
                             {isMobile && (
                                 <div className="flex items-center justify-center bg-transparent p-2 border-0">
-                                    <Logo className="border-0" />
+                                    <Logo className="border-0 h-[52px]" />
                                 </div>
                             )}
                         </div>

@@ -62,12 +62,17 @@ const SidebarContent: React.FC<{ isCollapsed: boolean, onLinkClick?: () => void,
 
     return (
         <div className="flex flex-col">
-            {hideHeader && (
+            {hideHeader && isCollapsed && (
                 <div className="p-4 border-b border-[#1f3d2b] bg-[#041b0f] flex justify-center h-16 items-center transition-all duration-300 flex-shrink-0">
                     <button onClick={() => window.location.href = '/#/profile'} className="btn-icon inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-white/10 focus:outline-none" aria-label="Go to profile page">
                         <span className="sr-only">Go to profile</span>
                         <ArrowLeft className="block h-6 w-6" />
                     </button>
+                </div>
+            )}
+            {hideHeader && !isCollapsed && (
+                <div className="p-4 border-b border-[#1f3d2b] bg-[#041b0f] flex justify-center h-16 items-center transition-all duration-300 flex-shrink-0">
+                    {/* Empty header - just background color */}
                 </div>
             )}
             {!hideHeader && (
