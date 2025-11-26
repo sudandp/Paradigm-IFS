@@ -748,11 +748,11 @@
         transform: none !important;
       }
 
-      /* Input fields - Dark semi-transparent style */
+      /* Input fields - Solid dark style */
       input,
       textarea,
       select {
-        background-color: rgba(13, 44, 24, 0.4) !important;
+        background-color: #0d2c18 !important;
         border: 1px solid rgba(34, 197, 94, 0.2) !important;
         border-radius: 12px !important;
         color: #ffffff !important;
@@ -764,7 +764,7 @@
       input:focus,
       textarea:focus,
       select:focus {
-        background-color: rgba(13, 44, 24, 0.6) !important;
+        background-color: #0d2c18 !important;
         border-color: #22c55e !important;
         outline: none !important;
         box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1) !important;
@@ -775,13 +775,15 @@
         color: rgba(255, 255, 255, 0.5) !important;
       }
 
-      /* Cards and containers */
+      /* Cards and containers - Solid background for readability */
       .bg-white,
       .md\:bg-white,
       .bg-card,
       [class*="card"] {
-        background-color: rgba(13, 44, 24, 0.3) !important;
-        border: 1px solid rgba(34, 197, 94, 0.15) !important;
+        background-color: #041b0f !important;
+        background-image: none !important;
+        opacity: 1 !important;
+        border: none !important;
         border-radius: 16px !important;
       }
 
@@ -795,10 +797,11 @@
       }
 
       /* Make calendar and card components transparent */
-      .rounded-xl,
+      /* REMOVED: This was causing modals to be transparent */
+      /* .rounded-xl,
       .rounded-2xl {
         background-color: transparent !important;
-      }
+      } */
 
       /* Remove any red borders/outlines */
       nav,

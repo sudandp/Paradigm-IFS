@@ -16,9 +16,9 @@ const schema = yup.object({
 }).defined();
 
 interface InsuranceFormProps {
-  onSave: (data: Omit<Insurance, 'id'>) => void;
-  onClose: () => void;
-  initialData?: Insurance | null;
+    onSave: (data: Omit<Insurance, 'id'>) => void;
+    onClose: () => void;
+    initialData?: Insurance | null;
 }
 
 const InsuranceForm: React.FC<InsuranceFormProps> = ({ onSave, onClose, initialData }) => {

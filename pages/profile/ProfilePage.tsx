@@ -389,7 +389,7 @@ const ProfilePage: React.FC = () => {
             </Modal>
 
             <div className="relative overflow-hidden md:bg-white md:p-6 md:rounded-2xl md:shadow-lg flex flex-col md:flex-row items-center gap-6 border border-gray-100">
-                <div className="absolute top-0 left-0 w-full h-32 bg-gray-50 border-b-4 border-gray-200 shadow-lg"></div>
+                <div className="absolute top-0 left-0 w-full h-32 bg-[#006b3f] border-b-4 border-[#005632] shadow-lg"></div>
                 <div className="relative z-10">
                     <AvatarUpload file={avatarFile} onFileChange={handlePhotoChange} />
                 </div>

@@ -67,15 +67,12 @@ const Header: React.FC<HeaderProps> = ({ setIsMobileMenuOpen }) => {
             <header className="sticky top-0 z-30 bg-[#0d2818] md:bg-gray-50/50 backdrop-blur-md border-b border-[#1f3d2b] md:border-gray-200/50 transition-all duration-200">
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center h-16">
-                        <div className="flex-none md:hidden w-10">
-                            <button onClick={handleMobileExit} className="btn-icon inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-white/10 focus:outline-none" aria-label="Go to profile page">
-                                <span className="sr-only">Go to profile</span>
-                                <ArrowLeft className="block h-6 w-6" />
-                            </button>
-                        </div>
-
                         <div className="flex-1 flex justify-center md:justify-start min-w-0 px-2">
-                            {/* Logo removed for mobile view to create a cleaner header */}
+                            {isMobile && (
+                                <div className="flex items-center justify-center bg-transparent p-2 border-0">
+                                    <Logo className="border-0" />
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex-none flex justify-end w-auto min-w-10">

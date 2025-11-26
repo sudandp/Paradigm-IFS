@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, Navigate, useLocation } from 'react-router-dom';
-import { ChevronsLeft, ChevronsRight, ChevronDown, ChevronUp, ShieldCheck, LayoutDashboard, ClipboardCheck, Map as MapIcon, ClipboardList, User, Briefcase, ListTodo, Building, Users, Shirt, Settings, GitBranch, Calendar, CalendarCheck2, ShieldHalf, FileDigit, GitPullRequest, Home, BriefcaseBusiness, UserPlus, IndianRupee, PackagePlus, LifeBuoy, MapPin } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, ChevronDown, ChevronUp, ShieldCheck, LayoutDashboard, ClipboardCheck, Map as MapIcon, ClipboardList, User, Briefcase, ListTodo, Building, Users, Shirt, Settings, GitBranch, Calendar, CalendarCheck2, ShieldHalf, FileDigit, GitPullRequest, Home, BriefcaseBusiness, UserPlus, IndianRupee, PackagePlus, LifeBuoy, MapPin, ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { usePermissionsStore } from '../../store/permissionsStore';
 import Logo from '../ui/Logo';
@@ -62,6 +62,14 @@ const SidebarContent: React.FC<{ isCollapsed: boolean, onLinkClick?: () => void,
 
     return (
         <div className="flex flex-col">
+            {hideHeader && (
+                <div className="p-4 border-b border-[#1f3d2b] bg-[#041b0f] flex justify-center h-16 items-center transition-all duration-300 flex-shrink-0">
+                    <button onClick={() => window.location.href = '/#/profile'} className="btn-icon inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-white/10 focus:outline-none" aria-label="Go to profile page">
+                        <span className="sr-only">Go to profile</span>
+                        <ArrowLeft className="block h-6 w-6" />
+                    </button>
+                </div>
+            )}
             {!hideHeader && (
                 <div className="p-4 border-b border-gray-200 bg-white flex justify-center h-16 items-center transition-all duration-300 flex-shrink-0">
                     {isCollapsed ? (
@@ -84,7 +92,7 @@ const SidebarContent: React.FC<{ isCollapsed: boolean, onLinkClick?: () => void,
                                     : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                                 : isActive
                                     ? 'bg-[#1c3a23] text-white shadow-sm border border-white/5'
-                                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                    : 'text-white hover:bg-white/5 hover:text-white/90'
                             }`
                         }
                         style={({ isActive }) => {
@@ -100,7 +108,7 @@ const SidebarContent: React.FC<{ isCollapsed: boolean, onLinkClick?: () => void,
                                 <link.icon
                                     className={`h-5 w-5 flex-shrink-0 transition-colors duration-200 ${mode === 'light'
                                         ? isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'
-                                        : isActive ? 'text-emerald-400' : 'text-gray-400 group-hover:text-white'
+                                        : isActive ? 'text-white' : 'text-white group-hover:text-white'
                                         } ${isCollapsed ? '' : 'mr-3'}`}
                                 />
                                 {!isCollapsed && <span>{link.label}</span>}
@@ -206,6 +214,7 @@ const MainLayout: React.FC = () => {
                         isCollapsed={isSidebarCollapsed}
                         mode={isMobile ? "dark" : "light"}
                         onLinkClick={isMobile ? () => setIsSidebarCollapsed(true) : undefined}
+                        hideHeader={isMobile}
                     />
                 </div>
                 <div className={`flex-shrink-0 px-2 pt-2 mt-auto flex items-center ${isMobile ? 'border-t border-[#1f3d2b]' : 'border-t border-border'}`}>

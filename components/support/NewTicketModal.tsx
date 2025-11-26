@@ -100,7 +100,7 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose, onSucc
   // Mobile Full-Screen View
   if (isMobile) {
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col bg-[#0f1f0f] text-white animate-fade-in-scale">
+      <div className="fixed inset-0 z-[100] flex flex-col bg-card text-white animate-fade-in-scale">
         <header className="p-4 flex-shrink-0 flex items-center gap-4 border-b border-[#374151]">
           <Button variant="icon" onClick={onClose} aria-label="Close form"><ArrowLeft className="h-6 w-6" /></Button>
           <h3 className="text-lg font-semibold">Create New Post</h3>

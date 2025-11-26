@@ -160,8 +160,8 @@ const VerificationDashboard: React.FC = () => {
                                 key={tab}
                                 onClick={() => setStatusFilter(tab)}
                                 className={`${statusFilter === tab
-                                        ? 'border-accent text-accent-dark'
-                                        : 'border-transparent text-muted hover:text-accent-dark hover:border-accent'
+                                    ? 'border-accent text-accent-dark'
+                                    : 'border-transparent text-muted hover:text-accent-dark hover:border-accent'
                                     } whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm capitalize`}
                             >
                                 {tab}
