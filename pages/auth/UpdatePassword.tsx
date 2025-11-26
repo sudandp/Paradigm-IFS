@@ -21,14 +21,17 @@ interface UpdatePasswordForm {
 }
 
 const getFriendlyAuthError = (errorCode: string): string => {
-  if (errorCode.includes('weak password')) {
-    return 'Password is too weak. It must be at least 6 characters long.';
+  const msg = errorCode.toLowerCase();
+
+  if (msg.includes('weak password')) {
+    return 'Password is too weak. Please use at least 6 characters.';
   }
-  if (errorCode.includes('requires a recent login')) {
-    return 'This action is sensitive and requires recent authentication. Please log in again before retrying.';
+  if (msg.includes('requires a recent login')) {
+    return 'For your security, please sign in again to continue.';
   }
-  console.error("Unhandled Supabase auth error:", errorCode);
-  return 'An unexpected error occurred. Please try again.';
+
+  console.error("Unhandled auth error:", errorCode);
+  return 'Something went wrong. Please try again.';
 };
 
 const UpdatePassword = () => {
@@ -84,8 +87,8 @@ const UpdatePassword = () => {
   if (error && !user) { // If auth session is invalid
     return (
       <div className="text-center">
-        <h3 className="text-3xl font-bold text-white">Invalid Session</h3>
-        <p className="text-sm text-gray-300 mt-1">{error}</p>
+        <h3 className="text-3xl font-bold text-white">Link Expired</h3>
+        <p className="text-sm text-gray-300 mt-1">This password reset link is no longer valid.</p>
         <div className="mt-6 flex flex-col gap-4">
           <Link to="/auth/forgot-password" className="font-medium text-white/80 hover:text-white">
             Request a new link

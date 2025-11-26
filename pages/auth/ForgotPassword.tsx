@@ -49,7 +49,7 @@ const ForgotPassword = () => {
             // For security, Supabase often returns a generic success message even if the user doesn't exist.
             // But we handle specific errors if they occur.
             if (resetError.message.includes('rate limit')) {
-                setError('Too many requests. Please wait a while before trying again.');
+                setError('Too many attempts. Please wait a few minutes before trying again.');
             } else {
                 // Show a generic success message to prevent user enumeration
                 setIsSubmitted(true);

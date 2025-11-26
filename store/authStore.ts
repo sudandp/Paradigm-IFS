@@ -12,30 +12,38 @@ import { withTimeout } from '../utils/async';
 import { calculateDistanceMeters, reverseGeocode, getPrecisePosition } from '../utils/locationUtils';
 
 // Centralized friendly error message handler for Supabase
+// Centralized friendly error message handler for Supabase
 const getFriendlyAuthError = (errorMessage: string): string => {
-    if (errorMessage.includes('timed out')) {
-        return errorMessage; // Return the specific timeout message directly
+    const msg = errorMessage.toLowerCase();
+
+    if (msg.includes('timed out')) {
+        return 'The request took too long. Please check your internet connection and try again.';
     }
-    if (errorMessage.includes('Invalid API key')) {
-        return 'Connection to the backend failed: The API key is invalid. Please contact the administrator to correct the configuration.';
+    if (msg.includes('invalid api key') || msg.includes('configuration')) {
+        return 'System configuration error. Please contact support.';
     }
-    if (errorMessage.toLowerCase().includes('failed to fetch')) {
-        return 'Network issue please check your network';
+    if (msg.includes('failed to fetch') || msg.includes('network')) {
+        return 'Unable to connect. Please check your internet connection.';
     }
-    if (errorMessage.includes('Invalid login credentials')) {
-        return 'Invalid email or password. If you signed up with Google and haven\'t set a password yet, please use "Forgot password" to set one, or sign in with Google.';
+    if (msg.includes('invalid login credentials')) {
+        return 'Incorrect email or password. If you use Google Sign-In, please click "Sign in with Google".';
     }
-    if (errorMessage.includes('User already registered')) {
-        return 'An account with this email address already exists. Please sign in or reset your password.';
+    if (msg.includes('user already registered') || msg.includes('already exists')) {
+        return 'This email is already registered. Please sign in.';
     }
-    if (errorMessage.includes('Email not confirmed')) {
-        return 'Please confirm your email address before logging in. Check your inbox for the confirmation link.';
+    if (msg.includes('email not confirmed')) {
+        return 'Please verify your email address. Check your inbox for the confirmation link.';
     }
-    if (errorMessage.includes('too many requests')) {
-        return 'Too many login attempts. Please wait a few minutes or reset your password.';
+    if (msg.includes('too many requests') || msg.includes('rate limit')) {
+        return 'Too many attempts. Please wait a few minutes before trying again.';
     }
-    console.error("Unhandled Supabase auth error:", errorMessage);
-    return 'An unexpected error occurred. Please try again or contact support.';
+    if (msg.includes('weak password')) {
+        return 'Password is too weak. Please use a stronger password.';
+    }
+
+    // Log the actual error for debugging but show a friendly message to the user
+    console.error("Unhandled auth error:", errorMessage);
+    return 'Something went wrong. Please try again or contact support.';
 };
 
 interface AuthState {

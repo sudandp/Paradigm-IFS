@@ -364,6 +364,12 @@ const App: React.FC = () => {
     // last path is stored, we send the user to their profile page.
     // We also check isLoginAnimationPending to allow the login page to show a success animation.
 
+    // IMPORTANT: Allow users to stay on /auth/update-password to set their new password
+    // after clicking a password reset link
+    if (location.pathname === '/auth/update-password') {
+      return; // Don't redirect, let them set their password
+    }
+
     if (user && !isLoginAnimationPending && (
       location.pathname.startsWith('/auth') ||
       location.pathname === '/' ||

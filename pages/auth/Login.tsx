@@ -158,7 +158,7 @@ const Login: React.FC = () => {
                             className="!pl-12 !bg-black/60 !text-white !border-white/10 focus:!border-[#22c55e] placeholder:!text-gray-500 !py-3 !rounded-xl transition-all"
                         />
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-3">
                         <div className="flex-shrink-0">
                             <Checkbox
                                 id="rememberMe"
