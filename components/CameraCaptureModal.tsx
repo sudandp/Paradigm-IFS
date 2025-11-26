@@ -260,7 +260,7 @@ const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({ isOpen, onClose
       )}
 
       <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/70 to-transparent z-30 flex justify-between items-center">
-        <Button variant="icon" className="!text-white hover:!bg-white/20" size="sm" onClick={handleClose}>
+        <Button variant="icon" className="!text-white hover:!bg-white/20 !p-2" onClick={handleClose}>
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <h3 className="text-lg font-bold flex-1 text-center">
@@ -285,6 +285,17 @@ const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({ isOpen, onClose
               onCropComplete={onCropComplete}
               onZoomChange={setZoom}
               cropShape={captureGuidance === 'profile' ? 'round' : 'rect'}
+              style={{
+                containerStyle: {
+                  backgroundColor: 'transparent',
+                },
+                mediaStyle: {
+                  objectFit: 'contain',
+                },
+              }}
+              classes={{
+                containerClassName: 'bg-black/30',
+              }}
             />
           </div>
         ) : (
