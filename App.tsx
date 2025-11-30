@@ -19,11 +19,13 @@ import { withTimeout } from './utils/async';
 
 // Layouts
 import MainLayout from './components/layouts/MainLayout';
+import MobileLayout from './components/layouts/MobileLayout';
 import AuthLayout from './components/layouts/AuthLayout';
 import SecurityWrapper from './components/SecurityWrapper';
 
 // Pages
 import Splash from './pages/Splash';
+import MobileHome from './pages/MobileHome';
 import Login from './pages/auth/Login';
 import SignUp from './pages/auth/SignUp';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -154,7 +156,9 @@ const MainLayoutWrapper: React.FC = () => {
     return <Navigate to="/pending-approval" replace />;
   }
   // User is authenticated and verified, show the main layout and its nested routes
-  return <MainLayout />;
+  // Use MobileLayout for mobile devices, MainLayout for desktop
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  return isMobile ? <MobileLayout /> : <MainLayout />;
 };
 
 const App: React.FC = () => {
@@ -432,6 +436,7 @@ const App: React.FC = () => {
           <Route index element={<Navigate to="/profile" replace />} />
 
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="mobile-home" element={<MobileHome />} />
 
           {/* Onboarding Flow */}
           <Route element={<ProtectedRoute requiredPermission="create_enrollment" />}>

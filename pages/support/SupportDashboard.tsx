@@ -266,14 +266,12 @@ const SupportDashboard: React.FC = () => {
                                 <UserCheck className="mr-1.5 h-3.5 w-3.5" /> Nearby
                             </Button>
                         )}
-                        <span
+                        <Button
                             onClick={() => setIsNewTicketModalOpen(true)}
-                            className="flex-1 lg:flex-none cursor-pointer inline-flex items-center justify-center !bg-[#32CD32] hover:!bg-[#28a428] !text-[#0D1A0D] !font-bold !border-none shadow-none text-sm py-3 px-6 transition-colors rounded-xl isolate relative before:!content-none after:!content-none"
-                            style={{ backgroundImage: 'none' }}
+                            className="flex-1 lg:flex-none"
                         >
-                            <Plus className="mr-1.5 h-3.5 w-3.5 relative z-10" />
-                            <span className="relative z-10">New Ticket</span>
-                        </span>
+                            <Plus className="mr-1.5 h-3.5 w-3.5" /> New Ticket
+                        </Button>
                     </div>
                 </div>
             </div>
