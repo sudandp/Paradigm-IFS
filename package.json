@@ -6,7 +6,7 @@
   "description": "A frontend prototype for the Paradigm Employee Onboarding system, running entirely on mock data.",
   "scripts": {
     "server": "node --loader ts-node/esm src/server.ts",
-    "dev": "npm run server & vite",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "start": "node dist/server.js"
