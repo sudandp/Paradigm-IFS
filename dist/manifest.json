@@ -1,6 +1,6 @@
 {
-    "name": "Paradigm Services - Employee Portal",
-    "short_name": "Paradigm",
+    "name": "Paradigm Office",
+    "short_name": "Paradigm Office",
     "description": "Comprehensive employee onboarding and management system",
     "start_url": "/",
     "display": "standalone",

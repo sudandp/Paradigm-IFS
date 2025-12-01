@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.paradigmservices.employee',
-  appName: 'Paradigm Services',
+  appName: 'Paradigm Office',
   webDir: 'dist',
   server: {
     androidScheme: 'https',
