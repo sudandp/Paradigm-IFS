@@ -45,10 +45,10 @@ const MobileLayout: React.FC = () => {
             </div>
 
             {/* Main Content Area */}
-            {/* Increased bottom padding to account for BottomNav + device safe area */}
+            {/* Increased bottom padding by 30% (9.1rem = 7rem * 1.3) for more clearance */}
             <main
                 className="flex-1 overflow-y-auto px-4 pt-2"
-                style={{ paddingBottom: 'calc(7rem + env(safe-area-inset-bottom))' }}
+                style={{ paddingBottom: 'calc(9.1rem + env(safe-area-inset-bottom))' }}
             >
                 <Outlet />
             </main>
