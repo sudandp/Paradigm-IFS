@@ -756,6 +756,7 @@ const AttendanceDashboard: React.FC = () => {
     const datePickerRef = useRef<HTMLDivElement>(null);
 
     const [selectedUser, setSelectedUser] = useState<string>('all');
+    const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [reportType, setReportType] = useState<'basic' | 'log' | 'monthly'>('basic');
     const [isDownloading, setIsDownloading] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -1201,8 +1202,13 @@ const AttendanceDashboard: React.FC = () => {
             });
         });
 
-        return data;
-    }, [users, attendanceEvents, dateRange, selectedUser, recurringHolidays]);
+        // Apply status filter
+        const filteredData = selectedStatus === 'all'
+            ? data
+            : data.filter(row => row.status === selectedStatus);
+
+        return filteredData;
+    }, [users, attendanceEvents, dateRange, selectedUser, selectedStatus, recurringHolidays]);
 
     // 2. Attendance Log Data (Raw Events)
     const attendanceLogData: AttendanceLogDataRow[] = useMemo(() => {
@@ -1636,6 +1642,24 @@ const AttendanceDashboard: React.FC = () => {
                             {users.map(u => (
                                 <option key={u.id} value={u.id}>{u.name}</option>
                             ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                        <select
+                            className="border rounded-md px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-green-500 outline-none max-w-[200px]"
+                            value={selectedStatus}
+                            onChange={(e) => setSelectedStatus(e.target.value)}
+                        >
+                            <option value="all">All Status</option>
+                            <option value="Present">Present</option>
+                            <option value="Half Day">Half Day</option>
+                            <option value="Absent">Absent</option>
+                            <option value="On Leave (Full)">On Leave (Full)</option>
+                            <option value="On Leave (Half)">On Leave (Half)</option>
+                            <option value="Holiday">Holiday</option>
+                            <option value="Weekend">Weekend</option>
                         </select>
                     </div>
                 </div>
