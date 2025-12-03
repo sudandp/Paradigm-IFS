@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useForm, Controller, useWatch } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import { Controller } from 'react-hook-form';
 import type { Organization, MasterGentsUniforms, GentsPantsSize, GentsShirtSize, MasterLadiesUniforms, LadiesPantsSize, LadiesShirtSize, UniformRequest, UniformRequestItem } from '../../types';
 import { api } from '../../services/api';
 import Button from '../../components/ui/Button';
@@ -11,12 +12,7 @@ import { Loader2, Plus, Shirt, Eye, Edit, Trash2, X, ChevronDown, Save } from 'l
 import { format } from 'date-fns';
 import Modal from '../../components/ui/Modal';
 
-type UniformFormData = {
-    siteId: string;
-    gender: 'Gents' | 'Ladies';
-    pantsQuantities: Record<string, number | null>;
-    shirtsQuantities: Record<string, number | null>;
-};
+
 
 const UniformStatusChip: React.FC<{ status: UniformRequest['status'] }> = ({ status }) => {
     const styles: Record<UniformRequest['status'], string> = {
@@ -104,115 +100,7 @@ const UniformSizeTable: React.FC<UniformSizeTableProps> = ({
     );
 };
 
-const UniformRequestForm: React.FC<{
-    onSave: (data: UniformRequest) => void,
-    onCancel: () => void,
-    sites: Organization[],
-    masterUniforms: { gents: MasterGentsUniforms, ladies: MasterLadiesUniforms },
-    initialData?: UniformRequest | null,
-}> = ({ onSave, onCancel, sites, masterUniforms, initialData }) => {
-    const { register, control, handleSubmit, watch, reset } = useForm<UniformFormData>({
-        defaultValues: { siteId: '', gender: 'Gents', pantsQuantities: {}, shirtsQuantities: {} }
-    });
 
-    const gender = watch('gender');
-
-    useEffect(() => {
-        if (initialData) {
-            const pantsQuantities: Record<string, number | null> = {};
-            const shirtsQuantities: Record<string, number | null> = {};
-            initialData.items.forEach(item => {
-                if (item.category === 'Pants') {
-                    pantsQuantities[item.sizeId] = item.quantity;
-                } else {
-                    shirtsQuantities[item.sizeId] = item.quantity;
-                }
-            });
-            reset({
-                siteId: initialData.siteId,
-                gender: initialData.gender,
-                pantsQuantities,
-                shirtsQuantities
-            });
-        } else {
-            reset({ siteId: '', gender: 'Gents', pantsQuantities: {}, shirtsQuantities: {} });
-        }
-    }, [initialData, reset]);
-
-    const onSubmit = (data: UniformFormData) => {
-        const site = sites.find(s => s.id === data.siteId);
-        if (!site) return;
-
-        const allSizes = gender === 'Gents'
-            ? [...masterUniforms.gents.pants, ...masterUniforms.gents.shirts]
-            : [...masterUniforms.ladies.pants, ...masterUniforms.ladies.shirts];
-
-        const items: UniformRequestItem[] = [];
-
-        for (const [sizeId, quantity] of Object.entries(data.pantsQuantities)) {
-            if (quantity && quantity > 0) {
-                const sizeInfo = allSizes.find(s => s.id === sizeId);
-                if (sizeInfo) items.push({ sizeId, quantity, category: 'Pants', sizeLabel: sizeInfo.size, fit: sizeInfo.fit });
-            }
-        }
-        for (const [sizeId, quantity] of Object.entries(data.shirtsQuantities)) {
-            if (quantity && quantity > 0) {
-                const sizeInfo = allSizes.find(s => s.id === sizeId);
-                if (sizeInfo) items.push({ sizeId, quantity, category: 'Shirts', sizeLabel: sizeInfo.size, fit: sizeInfo.fit });
-            }
-        }
-
-        const request: UniformRequest = {
-            id: initialData?.id || `new_${Date.now()}`,
-            siteId: data.siteId,
-            siteName: site.shortName,
-            gender: data.gender,
-            requestedDate: initialData?.requestedDate || new Date().toISOString(),
-            status: initialData?.status || 'Pending',
-            items: items,
-        };
-        onSave(request);
-    };
-
-    return (
-        <form onSubmit={handleSubmit(onSubmit)} className="border-0 shadow-none md:bg-card md:p-6 md:rounded-xl md:shadow-card my-6 animate-fade-in-down">
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-primary-text">{initialData ? 'Edit' : 'New'} Uniform Request</h3>
-                <Button type="button" variant="icon" onClick={onCancel} aria-label="Close form"><X /></Button>
-            </div>
-            <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Select label="Select Site" {...register('siteId')} required>
-                        <option value="">-- Select a Site --</option>
-                        {sites.map(s => <option key={s.id} value={s.id}>{s.shortName}</option>)}
-                    </Select>
-                    <Select label="Select Uniform Type" {...register('gender')}>
-                        <option>Gents</option>
-                        <option>Ladies</option>
-                    </Select>
-                </div>
-
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {gender === 'Gents' ? (
-                        <>
-                            <UniformSizeTable title="Gents' Pants" sizes={masterUniforms.gents.pants} headers={[{ key: 'length', label: 'L' }, { key: 'waist', label: 'W' }, { key: 'hip', label: 'H' }, { key: 'tilesLoose', label: 'TL' }, { key: 'bottomWaist', label: 'BW' }, { key: 'fit', label: 'Fit' }]} control={control} quantityType="pantsQuantities" />
-                            <UniformSizeTable title="Gents' Shirts" sizes={masterUniforms.gents.shirts} headers={[{ key: 'length', label: 'L' }, { key: 'sleeves', label: 'S' }, { key: 'chest', label: 'C' }, { key: 'shoulder', label: 'Sh' }, { key: 'collar', label: 'Co' }, { key: 'fit', label: 'Fit' }]} control={control} quantityType="shirtsQuantities" />
-                        </>
-                    ) : (
-                        <>
-                            <UniformSizeTable title="Ladies' Pants" sizes={masterUniforms.ladies.pants} headers={[{ key: 'length', label: 'L' }, { key: 'waist', label: 'W' }, { key: 'hip', label: 'H' }, { key: 'fit', label: 'Fit' }]} control={control} quantityType="pantsQuantities" />
-                            <UniformSizeTable title="Ladies' Shirts" sizes={masterUniforms.ladies.shirts} headers={[{ key: 'length', label: 'L' }, { key: 'sleeves', label: 'S' }, { key: 'bust', label: 'B' }, { key: 'shoulder', label: 'Sh' }, { key: 'fit', label: 'Fit' }]} control={control} quantityType="shirtsQuantities" />
-                        </>
-                    )}
-                </div>
-                <div className="flex justify-end gap-3 pt-4 border-t">
-                    <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
-                    <Button type="submit"><Save className="mr-2 h-4 w-4" /> Save Request</Button>
-                </div>
-            </div>
-        </form>
-    );
-};
 
 const RequestDetailsModal: React.FC<{
     request: UniformRequest | null;
@@ -272,6 +160,7 @@ const RequestDetailsModal: React.FC<{
 };
 
 const UniformDashboard: React.FC = () => {
+    const navigate = useNavigate();
     const [view, setView] = useState<'list' | 'form'>('list');
     const [requests, setRequests] = useState<UniformRequest[]>([]);
     const [sites, setSites] = useState<Organization[]>([]);
@@ -306,13 +195,11 @@ const UniformDashboard: React.FC = () => {
     }, []);
 
     const handleNewRequest = () => {
-        setEditingRequest(null);
-        setView('form');
+        navigate('/uniforms/request/new');
     };
 
     const handleEdit = (request: UniformRequest) => {
-        setEditingRequest(request);
-        setView('form');
+        navigate(`/uniforms/request/edit/${request.id}`);
     };
 
     const handleSave = async (data: UniformRequest) => {
@@ -361,15 +248,7 @@ const UniformDashboard: React.FC = () => {
                 </AdminPageHeader>
             </div>
 
-            {view === 'form' && masterUniforms && (
-                <UniformRequestForm
-                    onSave={handleSave}
-                    onCancel={() => setView('list')}
-                    sites={sites}
-                    masterUniforms={masterUniforms}
-                    initialData={editingRequest}
-                />
-            )}
+
 
             {view === 'list' && (
                 <div className="overflow-x-auto">

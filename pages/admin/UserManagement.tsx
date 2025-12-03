@@ -1,10 +1,11 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import type { User } from '../../types';
 import { ShieldCheck, Plus, Edit, Trash2, Info, UserCheck } from 'lucide-react';
 import Button from '../../components/ui/Button';
-import UserForm from '../../components/admin/UserForm';
 import Modal from '../../components/ui/Modal';
 import Toast from '../../components/ui/Toast';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
@@ -13,11 +14,11 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import ApprovalModal from '../../components/admin/ApprovalModal';
 
 const UserManagement: React.FC = () => {
+    const navigate = useNavigate();
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
-    const [isUserFormOpen, setIsUserFormOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
 
@@ -42,13 +43,11 @@ const UserManagement: React.FC = () => {
     }, [fetchUsers]);
 
     const handleAdd = () => {
-        setCurrentUser(null);
-        setIsUserFormOpen(true);
+        navigate('/admin/users/add');
     };
 
     const handleEdit = (user: User) => {
-        setCurrentUser(user);
-        setIsUserFormOpen(true);
+        navigate(`/admin/users/edit/${user.id}`);
     };
 
     const handleApprove = (user: User) => {
@@ -59,42 +58,6 @@ const UserManagement: React.FC = () => {
     const handleDelete = (user: User) => {
         setCurrentUser(user);
         setIsDeleteModalOpen(true);
-    };
-
-    const handleSaveUser = async (data: any) => {
-        setIsSaving(true);
-        try {
-            if (currentUser) {
-                // Editing an existing user; omit the password if present
-                const { password, ...rest } = data;
-                await api.updateUser(currentUser.id, rest);
-                setToast({ message: 'User updated successfully!', type: 'success' });
-            } else {
-                // Creating a new user end‑to‑end: provision auth account and user profile
-                const { name, email, password, role, ...rest } = data;
-                if (!password) {
-                    throw new Error('Password is required when creating a new user');
-                }
-                const newUser = await api.createAuthUser({ name, email, password, role });
-                // Also persist any additional profile fields (e.g. organizationId) to the user record
-                if (rest && Object.keys(rest).length > 0) {
-                    await api.updateUser(newUser.id, rest);
-                }
-                // Send a welcome notification to the new user
-                await api.createNotification({
-                    userId: newUser.id,
-                    message: `Welcome ${newUser.name}! Your account has been created.`,
-                    type: 'greeting',
-                });
-                setToast({ message: 'User created successfully!', type: 'success' });
-            }
-            setIsUserFormOpen(false);
-            fetchUsers();
-        } catch (error: any) {
-            setToast({ message: error.message || 'Failed to save user.', type: 'error' });
-        } finally {
-            setIsSaving(false);
-        }
     };
 
     const handleConfirmApproval = async (userId: string, newRole: string) => {
@@ -134,14 +97,6 @@ const UserManagement: React.FC = () => {
     return (
         <div className="p-4 border-0 shadow-none md:bg-card md:p-6 md:rounded-xl md:shadow-card">
             {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
-
-            <UserForm
-                isOpen={isUserFormOpen}
-                onClose={() => setIsUserFormOpen(false)}
-                onSave={handleSaveUser}
-                initialData={currentUser}
-                isSaving={isSaving}
-            />
 
             <ApprovalModal
                 isOpen={isApprovalModalOpen}

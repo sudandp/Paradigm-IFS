@@ -7,7 +7,6 @@ import { Loader2, Plus, LifeBuoy, Users, Phone, MessageSquare, Video, Search, Fi
 import Button from '../../components/ui/Button';
 import Toast from '../../components/ui/Toast';
 import { formatDistanceToNow } from 'date-fns';
-import NewTicketModal from '../../components/support/NewTicketModal';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { ProfilePlaceholder } from '../../components/ui/ProfilePlaceholder';
 import Input from '../../components/ui/Input';
@@ -117,15 +116,19 @@ const NearbyUserItem: React.FC<{ user: User, onAction: (phone?: string) => void 
 );
 
 const SupportDashboard: React.FC = () => {
-    const { user } = useAuthStore();
     const navigate = useNavigate();
+    const { user } = useAuthStore();
+
     const [tickets, setTickets] = useState<SupportTicket[]>([]);
     const [nearbyUsers, setNearbyUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-    const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
+    const [filterStatus, setFilterStatus] = useState<string>('All');
+    const [filterCategory, setFilterCategory] = useState<string>('All');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isNearbyModalOpen, setIsNearbyModalOpen] = useState(false);
-    const isMobile = useMediaQuery('(max-width: 1023px)');
+    const isMobile = useMediaQuery('(max-width: 767px)');
 
     const [filters, setFilters] = useState({
         status: 'all',
@@ -176,7 +179,6 @@ const SupportDashboard: React.FC = () => {
 
     const handleNewTicketSuccess = (newTicket: SupportTicket) => {
         setTickets(prev => [newTicket, ...prev]);
-        setIsNewTicketModalOpen(false);
         setToast({ message: 'New ticket created successfully!', type: 'success' });
         navigate(`/support/ticket/${newTicket.id}`);
     };
@@ -212,13 +214,6 @@ const SupportDashboard: React.FC = () => {
             {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
 
             {/* Modals */}
-            {isNewTicketModalOpen && (
-                <NewTicketModal
-                    isOpen={isNewTicketModalOpen}
-                    onClose={() => setIsNewTicketModalOpen(false)}
-                    onSuccess={handleNewTicketSuccess}
-                />
-            )}
 
             <Modal
                 isOpen={isNearbyModalOpen}
@@ -267,7 +262,7 @@ const SupportDashboard: React.FC = () => {
                             </Button>
                         )}
                         <Button
-                            onClick={() => setIsNewTicketModalOpen(true)}
+                            onClick={() => navigate('/support/ticket/new')}
                             className="flex-1 lg:flex-none"
                         >
                             <Plus className="mr-1.5 h-3.5 w-3.5" /> New Ticket

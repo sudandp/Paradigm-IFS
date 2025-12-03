@@ -159,11 +159,11 @@ const SelectOrganization = () => {
     if (isMobileView) {
         return (
             <div className="h-full flex flex-col">
-                <header className="p-4 flex-shrink-0 flex items-center gap-4 fo-mobile-header">
-                    <button onClick={() => navigate('/onboarding')} aria-label="Go back">
+                <header className="p-4 flex-shrink-0 flex items-center gap-4 fo-mobile-header text-white">
+                    <button onClick={() => navigate('/onboarding')} aria-label="Go back" className="text-white">
                         <ArrowLeft className="h-6 w-6" />
                     </button>
-                    <h1>New Enrollment</h1>
+                    <h1 className="text-xl font-bold">New Enrollment</h1>
                 </header>
                 <main className="flex-1 overflow-y-auto p-4">
                     <div className="bg-card rounded-2xl p-6 space-y-6">
@@ -175,19 +175,19 @@ const SelectOrganization = () => {
                             <p className="text-sm text-gray-400">Choose the client and site for the new employee.</p>
                         </div>
                         <div className="space-y-4">
-                            <select value={selectedGroupId} onChange={(e) => { setSelectedGroupId(e.target.value); setSelectedCompanyId(''); setSelectedEntityId(''); }} className="fo-select fo-select-arrow">
+                            <select value={selectedGroupId} onChange={(e) => { setSelectedGroupId(e.target.value); setSelectedCompanyId(''); setSelectedEntityId(''); }} className="form-input">
                                 <option value="">-- Select a Group --</option>
                                 {groups.map(group => <option key={group.id} value={group.id}>{group.name}</option>)}
                             </select>
-                            <select value={selectedCompanyId} onChange={(e) => { setSelectedCompanyId(e.target.value); setSelectedEntityId(''); }} disabled={!selectedGroupId} className="fo-select fo-select-arrow">
+                            <select value={selectedCompanyId} onChange={(e) => { setSelectedCompanyId(e.target.value); setSelectedEntityId(''); }} disabled={!selectedGroupId} className="form-input">
                                 <option value="">-- Select a Company --</option>
                                 {companies.map(company => <option key={company.id} value={company.id}>{company.name}</option>)}
                             </select>
-                            <select value={selectedEntityId} onChange={(e) => setSelectedEntityId(e.target.value)} disabled={!selectedCompanyId} className="fo-select fo-select-arrow">
+                            <select value={selectedEntityId} onChange={(e) => setSelectedEntityId(e.target.value)} disabled={!selectedCompanyId} className="form-input">
                                 <option value="">-- Select a Client/Site --</option>
                                 {entities.map(entity => <option key={entity.id} value={entity.id}>{entity.name}</option>)}
                             </select>
-                            <select value={selectedDesignation} onChange={(e) => setSelectedDesignation(e.target.value)} disabled={!selectedEntityId} className="fo-select fo-select-arrow">
+                            <select value={selectedDesignation} onChange={(e) => setSelectedDesignation(e.target.value)} disabled={!selectedEntityId} className="form-input">
                                 <option value="">-- Select a Designation --</option>
                                 {designationsForSite.map(desig => <option key={desig.id} value={desig.designation}>{desig.designation}</option>)}
                             </select>

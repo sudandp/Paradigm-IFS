@@ -30,6 +30,7 @@ import Login from './pages/auth/Login';
 import SignUp from './pages/auth/SignUp';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import UpdatePassword from './pages/auth/UpdatePassword';
+import LogoutPage from './pages/auth/LogoutPage';
 import PendingApproval from './pages/PendingApproval';
 import Forbidden from './pages/Forbidden';
 import OnboardingHome from './pages/OnboardingHome';
@@ -49,6 +50,7 @@ import SiteDashboard from './pages/site/OrganizationDashboard';
 import ProfilePage from './pages/profile/ProfilePage';
 import AttendanceDashboard from './pages/attendance/AttendanceDashboard';
 import MyLocations from './pages/attendance/MyLocations';
+import AttendanceActionPage from './pages/attendance/AttendanceActionPage';
 import AttendanceSettings from './pages/hr/AttendanceSettings';
 import LeaveDashboard from './pages/leaves/LeaveDashboard';
 import LeaveManagement from './pages/hr/LeaveManagement';
@@ -69,6 +71,19 @@ import MyTasks from './pages/onboarding/MyTasks';
 import UniformRequests from './pages/onboarding/UniformRequests';
 import SupportDashboard from './pages/support/SupportDashboard';
 import TicketDetail from './pages/support/TicketDetail';
+
+// Form Pages
+import AddUserPage from './pages/forms/AddUserPage';
+import AddPolicyPage from './pages/forms/AddPolicyPage';
+import NewTicketPage from './pages/forms/NewTicketPage';
+import AddGroupPage from './pages/forms/AddGroupPage';
+import GrantCompOffPage from './pages/forms/GrantCompOffPage';
+import AddModulePage from './pages/forms/AddModulePage';
+import AddRolePage from './pages/forms/AddRolePage';
+import AddSitePage from './pages/forms/AddSitePage';
+import QuickAddSitePage from './pages/forms/QuickAddSitePage';
+import AddTaskPage from './pages/forms/AddTaskPage';
+import NewUniformRequestPage from './pages/forms/NewUniformRequestPage';
 
 // Onboarding Form Steps
 import PersonalDetails from './pages/onboarding/PersonalDetails';
@@ -377,7 +392,7 @@ const App: React.FC = () => {
     }
 
     if (user && !isLoginAnimationPending && (
-      location.pathname.startsWith('/auth') ||
+      (location.pathname.startsWith('/auth') && location.pathname !== '/auth/logout') ||
       location.pathname === '/' ||
       location.pathname === '/splash'
     )) {
@@ -418,6 +433,7 @@ const App: React.FC = () => {
           <Route path="signup" element={<SignUp />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="update-password" element={<UpdatePassword />} />
+          <Route path="logout" element={<LogoutPage />} />
         </Route>
 
         {/* 2. Page for unverified users */}
@@ -472,15 +488,22 @@ const App: React.FC = () => {
           {/* Admin */}
           <Route element={<ProtectedRoute requiredPermission="manage_users" />}>
             <Route path="admin/users" element={<UserManagement />} />
+            <Route path="admin/users/add" element={<AddUserPage />} />
+            <Route path="admin/users/edit/:id" element={<AddUserPage />} />
           </Route>
           <Route element={<ProtectedRoute requiredPermission="manage_sites" />}>
             <Route path="admin/sites" element={<SiteManagement />} />
+            <Route path="admin/sites/add" element={<AddSitePage />} />
+            <Route path="admin/sites/quick-add" element={<QuickAddSitePage />} />
           </Route>
           <Route element={<ProtectedRoute requiredPermission="manage_roles_and_permissions" />}>
             <Route path="admin/roles" element={<RoleManagement />} />
+            <Route path="admin/roles/add" element={<AddRolePage />} />
+            <Route path="admin/roles/edit/:id" element={<AddRolePage />} />
           </Route>
           <Route element={<ProtectedRoute requiredPermission="manage_modules" />}>
             <Route path="admin/modules" element={<ModuleManagement />} />
+            <Route path="admin/modules/add" element={<AddModulePage />} />
           </Route>
           <Route element={<ProtectedRoute requiredPermission="manage_approval_workflow" />}>
             <Route path="admin/approval-workflow" element={<ApprovalWorkflow />} />
@@ -505,6 +528,8 @@ const App: React.FC = () => {
             <Route path="attendance/dashboard" element={<AttendanceDashboard />} />
             {/* New page for users to manage their own geofenced locations */}
             <Route path="attendance/locations" element={<MyLocations />} />
+            <Route path="attendance/check-in" element={<AttendanceActionPage />} />
+            <Route path="attendance/check-out" element={<AttendanceActionPage />} />
           </Route>
           <Route element={<ProtectedRoute requiredPermission="apply_for_leave" />}>
             <Route path="leaves/dashboard" element={<LeaveDashboard />} />
@@ -516,12 +541,15 @@ const App: React.FC = () => {
           </Route>
           <Route element={<ProtectedRoute requiredPermission="manage_leave_requests" />}>
             <Route path="hr/leave-management" element={<LeaveManagement />} />
+            <Route path="hr/leave-management/grant-comp-off" element={<GrantCompOffPage />} />
           </Route>
           <Route element={<ProtectedRoute requiredPermission="view_entity_management" />}>
             <Route path="hr/entities" element={<EntityManagement />} />
+            <Route path="hr/entity-management/add-group" element={<AddGroupPage />} />
           </Route>
           <Route element={<ProtectedRoute requiredPermission="manage_policies" />}>
             <Route path="hr/policies-and-insurance" element={<PoliciesAndInsurance />} />
+            <Route path="hr/policies/add" element={<AddPolicyPage />} />
           </Route>
           <Route element={<ProtectedRoute requiredPermission="manage_enrollment_rules" />}>
             <Route path="hr/enrollment-rules" element={<EnrollmentRules />} />
@@ -538,6 +566,8 @@ const App: React.FC = () => {
           {/* Uniforms */}
           <Route element={<ProtectedRoute requiredPermission="manage_uniforms" />}>
             <Route path="uniforms" element={<UniformDashboard />} />
+            <Route path="uniforms/request/new" element={<NewUniformRequestPage />} />
+            <Route path="uniforms/request/edit/:id" element={<NewUniformRequestPage />} />
           </Route>
 
           {/* Billing */}
@@ -551,11 +581,14 @@ const App: React.FC = () => {
           {/* Tasks */}
           <Route element={<ProtectedRoute requiredPermission="manage_tasks" />}>
             <Route path="tasks" element={<TaskManagement />} />
+            <Route path="tasks/add" element={<AddTaskPage />} />
+            <Route path="tasks/edit/:id" element={<AddTaskPage />} />
           </Route>
 
           {/* Support */}
           <Route element={<ProtectedRoute requiredPermission="access_support_desk" />}>
             <Route path="support" element={<SupportDashboard />} />
+            <Route path="support/ticket/new" element={<NewTicketPage />} />
             <Route path="support/ticket/:id" element={<TicketDetail />} />
           </Route>
         </Route>

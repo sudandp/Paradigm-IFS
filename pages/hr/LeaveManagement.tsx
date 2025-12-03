@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import type { LeaveRequest, LeaveRequestStatus, ExtraWorkLog } from '../../types';
 import { Loader2, Check, X, Plus } from 'lucide-react';
@@ -9,7 +10,6 @@ import { useAuthStore } from '../../store/authStore';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import Select from '../../components/ui/Select';
 import TableSkeleton from '../../components/skeletons/TableSkeleton';
-import GrantCompOffModal from '../../components/hr/GrantCompOffModal';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import RejectClaimModal from '../../components/hr/RejectClaimModal';
 
@@ -35,6 +35,7 @@ const ClaimStatusChip: React.FC<{ status: ExtraWorkLog['status'] }> = ({ status 
 
 
 const LeaveManagement: React.FC = () => {
+    const navigate = useNavigate();
     const { user } = useAuthStore();
     const [requests, setRequests] = useState<LeaveRequest[]>([]);
     const [claims, setClaims] = useState<ExtraWorkLog[]>([]);
@@ -43,7 +44,6 @@ const LeaveManagement: React.FC = () => {
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const [actioningId, setActioningId] = useState<string | null>(null);
     const isMobile = useMediaQuery('(max-width: 767px)');
-    const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
     const [isCompOffFeatureEnabled, setIsCompOffFeatureEnabled] = useState(true);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [claimToReject, setClaimToReject] = useState<ExtraWorkLog | null>(null);
@@ -175,14 +175,6 @@ const LeaveManagement: React.FC = () => {
     return (
         <div className="p-4 border-0 shadow-none md:bg-card md:p-6 md:rounded-xl md:shadow-card">
             {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
-            <GrantCompOffModal
-                isOpen={isGrantModalOpen}
-                onClose={() => setIsGrantModalOpen(false)}
-                onSuccess={() => {
-                    setToast({ message: 'Compensatory off granted successfully.', type: 'success' });
-                    setIsGrantModalOpen(false);
-                }}
-            />
             <RejectClaimModal
                 isOpen={isRejectModalOpen}
                 onClose={() => { setIsRejectModalOpen(false); setClaimToReject(null); }}
@@ -194,7 +186,7 @@ const LeaveManagement: React.FC = () => {
                 <h2 className="text-2xl font-bold text-primary-text">Leave Approval Inbox</h2>
                 {!isMobile && (
                     <Button
-                        onClick={() => setIsGrantModalOpen(true)}
+                        onClick={() => navigate('/hr/leave-management/grant-comp-off')}
                         disabled={!isCompOffFeatureEnabled}
                         title={!isCompOffFeatureEnabled ? "Feature disabled: 'comp_off_logs' table missing in database." : "Grant a compensatory off day"}
                         style={{ backgroundColor: '#006B3F', color: '#FFFFFF', borderColor: '#005632' }}
@@ -208,7 +200,7 @@ const LeaveManagement: React.FC = () => {
             {isMobile && (
                 <div className="mb-6">
                     <Button
-                        onClick={() => setIsGrantModalOpen(true)}
+                        onClick={() => navigate('/hr/leave-management/grant-comp-off')}
                         disabled={!isCompOffFeatureEnabled}
                         title={!isCompOffFeatureEnabled ? "Feature disabled: 'comp_off_logs' table missing in database." : "Grant a compensatory off day"}
                         style={{ backgroundColor: '#006B3F', color: '#FFFFFF', borderColor: '#005632' }}

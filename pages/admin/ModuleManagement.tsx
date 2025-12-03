@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import type { AppModule, Permission } from '../../types';
 import { Plus, Edit, Trash2, Loader2, Package } from 'lucide-react';
@@ -10,6 +11,7 @@ import ModuleFormModal from '../../components/admin/ModuleFormModal';
 import GridSkeleton from '../../components/skeletons/GridSkeleton';
 
 const ModuleManagement: React.FC = () => {
+  const navigate = useNavigate();
   const [modules, setModules] = useState<AppModule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
@@ -74,7 +76,7 @@ const ModuleManagement: React.FC = () => {
       </Modal>
 
       <AdminPageHeader title="Module Management">
-        <Button onClick={() => { setCurrentModule(null); setIsFormOpen(true); }}><Plus className="mr-2 h-4" /> Add Module</Button>
+        <Button onClick={() => navigate('/admin/modules/add')}><Plus className="mr-2 h-4" /> Add Module</Button>
       </AdminPageHeader>
 
       {isLoading ? (

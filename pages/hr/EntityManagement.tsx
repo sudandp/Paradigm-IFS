@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -158,6 +159,7 @@ const subcategories = [
 ];
 
 const EntityManagement: React.FC = () => {
+    const navigate = useNavigate();
     const [groups, setGroups] = useState<OrganizationGroup[]>([]);
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [siteConfigs, setSiteConfigs] = useState<SiteConfiguration[]>([]);
@@ -521,7 +523,7 @@ const EntityManagement: React.FC = () => {
                 return (
                     <div className="border-0 shadow-none md:bg-card md:p-6 md:rounded-xl md:shadow-card">
                         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
-                            <Button onClick={() => setNameModalState({ isOpen: true, mode: 'add', type: 'group', title: 'Add New Group', label: 'Group Name' })} style={{ backgroundColor: '#006B3F', color: '#FFFFFF', borderColor: '#005632' }} className="border hover:opacity-90 text-white shadow-lg hover:shadow-xl transition-all duration-300"><Plus className="mr-2 h-4" />Add Group</Button>
+                            <Button onClick={() => navigate('/hr/entity-management/add-group')} style={{ backgroundColor: '#006B3F', color: '#FFFFFF', borderColor: '#005632' }} className="border hover:opacity-90 text-white shadow-lg hover:shadow-xl transition-all duration-300"><Plus className="mr-2 h-4" />Add Group</Button>
                             <div className="flex items-center gap-2 flex-wrap">
                                 <Button type="button" variant="outline" onClick={handleDownloadTemplate} className="hover:bg-gray-100"><FileText className="mr-2 h-4 w-4" /> Template</Button>
                                 <Button type="button" variant="outline" onClick={() => importRef.current?.click()} className="hover:bg-gray-100"><Upload className="mr-2 h-4 w-4" /> Import</Button>

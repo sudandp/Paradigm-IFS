@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePermissionsStore } from '../../store/permissionsStore';
 import type { UserRole, Permission, AppModule, Role } from '../../types';
 import { ShieldCheck, Check, X, Loader2, Plus, MoreVertical, Edit, Trash2 } from 'lucide-react';
@@ -39,6 +40,7 @@ export const allPermissions: { key: Permission; name: string; description: strin
 ] as const].sort((a, b) => a.name.localeCompare(b.name));
 
 const RoleManagement: React.FC = () => {
+    const navigate = useNavigate();
     const { permissions, setRolePermissions, addRolePermissionEntry, removeRolePermissionEntry, renameRolePermissionEntry } = usePermissionsStore();
     const [roles, setRoles] = useState<Role[]>([]);
     const [modules, setModules] = useState<AppModule[]>([]);
@@ -188,7 +190,7 @@ const RoleManagement: React.FC = () => {
             </Modal>
 
             <AdminPageHeader title="Role & Permission Management">
-                <button onClick={() => { setIsEditing(false); setCurrentRole(null); setIsNameModalOpen(true); }} className="btn btn-primary btn-md">
+                <button onClick={() => navigate('/admin/roles/add')} className="btn btn-primary btn-md">
                     <Plus className="mr-2 h-4 w-4" /> Add Role
                 </button>
             </AdminPageHeader>
@@ -212,7 +214,7 @@ const RoleManagement: React.FC = () => {
                                                 </button>
                                                 {activeDropdown === role.id && (
                                                     <div ref={dropdownRef} className="absolute right-0 mt-2 w-32 bg-card border rounded-md shadow-lg z-10">
-                                                        <button onClick={() => { setIsEditing(true); setCurrentRole(role); setIsNameModalOpen(true); setActiveDropdown(null); }} className="w-full text-left px-3 py-2 text-sm hover:bg-page flex items-center"><Edit className="mr-2 h-4 w-4" />Rename</button>
+                                                        <button onClick={() => { navigate(`/admin/roles/edit/${role.id}`); setActiveDropdown(null); }} className="w-full text-left px-3 py-2 text-sm hover:bg-page flex items-center"><Edit className="mr-2 h-4 w-4" />Edit</button>
                                                         <button onClick={() => { setCurrentRole(role); setIsDeleteModalOpen(true); setActiveDropdown(null); }} className="w-full text-left px-3 py-2 text-sm hover:bg-page flex items-center text-red-600"><Trash2 className="mr-2 h-4 w-4" />Delete</button>
                                                     </div>
                                                 )}

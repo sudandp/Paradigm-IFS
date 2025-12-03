@@ -1,12 +1,13 @@
 
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import type { Organization, SiteConfiguration, Entity, ManpowerDetail, SiteStaffDesignation } from '../../types';
 import Button from '../../components/ui/Button';
 import { Plus, Edit, Trash2, Eye, Loader2, Upload, Download, CheckCircle, AlertCircle, Building, Users, Settings } from 'lucide-react';
-import AddSiteFromClientForm from '../../components/admin/AddSiteFromClientForm';
 import Modal from '../../components/ui/Modal';
+
 import Toast from '../../components/ui/Toast';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 // FIX: Changed to a named import as SiteConfigurationForm is not a default export.
@@ -63,54 +64,19 @@ const fromCSV = (csvText: string): Record<string, string>[] => {
     return rows;
 };
 
-const QuickAddSiteModal: React.FC<{ isOpen: boolean; onClose: () => void; onSave: (name: string) => void; }> = ({ isOpen, onClose, onSave }) => {
-    const [name, setName] = useState('');
-    const [error, setError] = useState('');
 
-    const handleSave = () => {
-        if (!name.trim()) {
-            setError('Site name cannot be empty.');
-            return;
-        }
-        onSave(name);
-        setName('');
-        onClose();
-    };
-
-    if (!isOpen) return null;
-
-    return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            onConfirm={handleSave}
-            title="Quick Add Provisional Site"
-            confirmButtonText="Add Site"
-            confirmButtonVariant="primary"
-        >
-            <p className="mb-4 text-sm">This will create a new site with a 90-day grace period to complete the full configuration.</p>
-            <Input
-                label="New Site Name"
-                id="quick-add-site-name"
-                value={name}
-                onChange={e => { setName(e.target.value); setError(''); }}
-                error={error}
-                autoFocus
-            />
-        </Modal>
-    );
-};
 
 
 export const SiteManagement: React.FC = () => {
+    const navigate = useNavigate();
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [siteConfigs, setSiteConfigs] = useState<SiteConfiguration[]>([]);
     const [allClients, setAllClients] = useState<(Entity & { companyName: string })[]>([]);
     const [siteStaffDesignations, setSiteStaffDesignations] = useState<SiteStaffDesignation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const [isAddSiteModalOpen, setIsAddSiteModalOpen] = useState(false);
-    const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+
+
     const [isSiteConfigFormOpen, setIsSiteConfigFormOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -171,44 +137,7 @@ export const SiteManagement: React.FC = () => {
         setIsDeleteModalOpen(true);
     };
 
-    const handleQuickAddSite = async (name: string) => {
-        const newSite: Organization = {
-            id: `SITE-${name.toUpperCase().replace(/\s/g, '').substring(0, 4)}-${Date.now() % 1000}`,
-            shortName: name,
-            fullName: name,
-            address: 'To be configured',
-            provisionalCreationDate: new Date().toISOString(),
-        };
-        try {
-            await api.createOrganization(newSite);
-            setToast({ message: `Provisional site '${name}' created.`, type: 'success' });
-            fetchData();
-        } catch (e: any) {
-            console.error('Error creating site:', e);
-            const errorMessage = e?.message || e?.error?.message || 'Failed to create site.';
-            setToast({ message: `Failed to create site: ${errorMessage}`, type: 'error' });
-        }
-    };
 
-
-    const handleAddSite = (client: Entity, manpowerCount: number) => {
-        if (organizations.some(org => org.id === client.organizationId)) {
-            setToast({ message: 'A site for this client already exists.', type: 'error' });
-            return;
-        }
-
-        const newSite: Organization = {
-            id: client.organizationId || `site_${Date.now()}`,
-            shortName: client.name,
-            fullName: client.name,
-            address: client.location || client.registeredAddress || '',
-            manpowerApprovedCount: manpowerCount,
-        };
-
-        setOrganizations(prev => [newSite, ...prev].sort((a, b) => a.shortName.localeCompare(b.shortName)));
-        setIsAddSiteModalOpen(false);
-        setToast({ message: 'Site added successfully. You can now configure it.', type: 'success' });
-    };
 
     const handleSaveSiteConfig = (orgId: string, configData: SiteConfiguration) => {
         setSiteConfigs(prev => {
@@ -326,16 +255,7 @@ export const SiteManagement: React.FC = () => {
 
             <input type="file" ref={importRef} className="hidden" accept=".csv" onChange={handleImport} />
 
-            <AddSiteFromClientForm
-                isOpen={isAddSiteModalOpen}
-                onClose={() => setIsAddSiteModalOpen(false)}
-                onSave={handleAddSite}
-            />
-            <QuickAddSiteModal
-                isOpen={isQuickAddOpen}
-                onClose={() => setIsQuickAddOpen(false)}
-                onSave={handleQuickAddSite}
-            />
+            <input type="file" ref={importRef} className="hidden" accept=".csv" onChange={handleImport} />
 
             {isSiteConfigFormOpen && editingOrgForConfig && (
                 <SiteConfigurationForm
@@ -374,11 +294,11 @@ export const SiteManagement: React.FC = () => {
                     <h2 className="text-2xl font-semibold text-primary-text">Site Management</h2>
                     {!isMobile && (
                         <div className="flex-shrink-0 flex items-center flex-wrap gap-2">
-                            <Button variant="outline" onClick={() => setIsQuickAddOpen(true)} className="mr-2 hover:bg-gray-100">
+                            <Button variant="outline" onClick={() => navigate('/admin/sites/quick-add')} className="mr-2 hover:bg-gray-100">
                                 <Plus className="w-5 h-5 mr-2" />
                                 Quick Add Site
                             </Button>
-                            <Button onClick={() => setIsAddSiteModalOpen(true)} className="mr-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5">
+                            <Button onClick={() => navigate('/admin/sites/add')} className="mr-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5">
                                 <Plus className="w-5 h-5 mr-2" />
                                 Add Site
                             </Button>
@@ -396,11 +316,11 @@ export const SiteManagement: React.FC = () => {
 
                 {isMobile && (
                     <div className="flex flex-col gap-3 mb-4">
-                        <Button onClick={() => setIsAddSiteModalOpen(true)} className="w-full justify-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5">
+                        <Button onClick={() => navigate('/admin/sites/add')} className="w-full justify-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5">
                             <Plus className="w-5 h-5 mr-2" />
                             Add Site
                         </Button>
-                        <Button variant="outline" onClick={() => setIsQuickAddOpen(true)} className="w-full justify-center hover:bg-gray-100">
+                        <Button variant="outline" onClick={() => navigate('/admin/sites/quick-add')} className="w-full justify-center hover:bg-gray-100">
                             <Plus className="w-5 h-5 mr-2" />
                             Quick Add Site
                         </Button>

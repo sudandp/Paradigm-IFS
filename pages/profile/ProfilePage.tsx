@@ -43,9 +43,9 @@ const ProfilePage: React.FC = () => {
 
     const isMobile = useMediaQuery('(max-width: 767px)');
     const isMobileView = isMobile; // Apply mobile view for all users on mobile
-    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-    const [confirmationAction, setConfirmationAction] = useState<'check-in' | 'check-out' | null>(null);
+    // const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false); // Removed modal state
+    // const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false); // Removed modal state
+    // const [confirmationAction, setConfirmationAction] = useState<'check-in' | 'check-out' | null>(null); // Removed modal state
 
     useEffect(() => {
         const checkPermissions = async () => {
@@ -186,54 +186,16 @@ const ProfilePage: React.FC = () => {
         setIsSubmittingAttendance(false);
     };
 
-    const handleSlideConfirm = () => {
-        setConfirmationAction(isCheckedIn ? 'check-out' : 'check-in');
-        setIsConfirmationModalOpen(true);
-    };
+    // handleSlideConfirm, handleConfirmAction, handleCancelAction removed - now using navigation
 
-    const handleConfirmAction = async () => {
-        setIsConfirmationModalOpen(false);
-        await handleAttendanceAction();
-        setConfirmationAction(null);
-    };
-
-    const handleCancelAction = () => {
-        setIsConfirmationModalOpen(false);
-        setConfirmationAction(null);
-    };
-
-    const isActionInProgress = isSubmittingAttendance || isConfirmationModalOpen;
+    const isActionInProgress = isSubmittingAttendance; // removed isConfirmationModalOpen
 
     const handleLogoutClick = () => {
-        setIsLogoutModalOpen(true);
+        // Navigate to the dedicated logout page instead of opening a modal
+        navigate('/auth/logout');
     };
 
-    const handleConfirmLogout = async () => {
-        setIsLogoutModalOpen(false);
-        if (isDirty) {
-            setIsSaving(true);
-            setToast({ message: 'Saving profile changes...', type: 'success' });
-            try {
-                const isValid = await trigger();
-                if (!isValid) {
-                    setToast({ message: 'Profile data is invalid. Please fix errors before logging out.', type: 'error' });
-                    setIsSaving(false);
-                    return;
-                }
-                const formData = getValues();
-                const updatedUser = await api.updateUser(user.id, formData);
-                updateUserProfile(updatedUser);
-                reset(formData); // Also reset here after saving on logout
-            } catch (error) {
-                setToast({ message: 'Failed to save profile. Logout aborted.', type: 'error' });
-                setIsSaving(false);
-                return;
-            }
-            setIsSaving(false);
-        }
-        await logout();
-        navigate('/auth/login', { replace: true });
-    };
+    // handleConfirmLogout removed as it's now handled in LogoutPage.tsx
 
     const formatTime = (isoString: string | null) => {
         if (!isoString) return '--:--';
@@ -254,19 +216,8 @@ const ProfilePage: React.FC = () => {
         return (
             <div className="p-4 space-y-8">
                 {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
-                <Modal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleConfirmLogout} title="Confirm Log Out">
-                    Are you sure you want to log out?
-                </Modal>
-                <Modal
-                    isOpen={isConfirmationModalOpen}
-                    onClose={handleCancelAction}
-                    onConfirm={handleConfirmAction}
-                    title={`Confirm ${confirmationAction === 'check-in' ? 'Check In' : 'Check Out'}`}
-                    confirmButtonVariant="primary"
-                    confirmButtonText="Yes, Proceed"
-                >
-                    <p className="text-center">Are you sure you want to {confirmationAction?.replace('-', ' ')}?</p>
-                </Modal>
+                {/* Logout Modal removed */}
+                {/* Attendance Confirmation Modal removed */}
 
                 <div className="flex flex-col items-center text-center gap-4">
                     <AvatarUpload file={avatarFile} onFileChange={handlePhotoChange} />
@@ -327,10 +278,7 @@ const ProfilePage: React.FC = () => {
                             ) : (
                                 <div className="flex gap-3">
                                     <Button
-                                        onClick={() => {
-                                            setConfirmationAction('check-in');
-                                            setIsConfirmationModalOpen(true);
-                                        }}
+                                        onClick={() => navigate('/attendance/check-in')}
                                         variant="primary"
                                         className="flex-1 !py-4 text-lg font-bold shadow-lg transition-all rounded-2xl"
                                         disabled={isCheckedIn || isActionInProgress}
@@ -338,10 +286,7 @@ const ProfilePage: React.FC = () => {
                                         <LogIn className="mr-3 h-6 w-6" /> Check In
                                     </Button>
                                     <Button
-                                        onClick={() => {
-                                            setConfirmationAction('check-out');
-                                            setIsConfirmationModalOpen(true);
-                                        }}
+                                        onClick={() => navigate('/attendance/check-out')}
                                         variant="danger"
                                         className="flex-1 !py-4 text-lg font-bold shadow-lg transition-all rounded-2xl"
                                         disabled={!isCheckedIn || isActionInProgress}
@@ -368,25 +313,8 @@ const ProfilePage: React.FC = () => {
     return (
         <div className="w-full space-y-8">
             {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
-            <Modal
-                isOpen={isLogoutModalOpen}
-                onClose={() => setIsLogoutModalOpen(false)}
-                onConfirm={handleConfirmLogout}
-                title="Confirm Log Out"
-                isConfirming={isSaving}
-            >
-                Are you sure you want to log out? Any unsaved changes on this page will be automatically saved.
-            </Modal>
-            <Modal
-                isOpen={isConfirmationModalOpen}
-                onClose={handleCancelAction}
-                onConfirm={handleConfirmAction}
-                title={`Confirm ${confirmationAction === 'check-in' ? 'Check In' : 'Check Out'}`}
-                confirmButtonVariant="primary"
-                confirmButtonText="Yes, Proceed"
-            >
-                <p className="text-center">Are you sure you want to {confirmationAction?.replace('-', ' ')}?</p>
-            </Modal>
+            {/* Logout Modal removed */}
+            {/* Attendance Confirmation Modal removed */}
 
             <div className="relative overflow-hidden md:bg-white md:p-6 md:rounded-2xl md:shadow-lg flex flex-col md:flex-row items-center gap-6 border border-gray-100">
                 <div className="absolute top-0 left-0 w-full h-32 bg-[#006b3f] border-b-4 border-[#005632] shadow-lg"></div>
@@ -451,10 +379,7 @@ const ProfilePage: React.FC = () => {
                             ) : (
                                 <div className="flex gap-4">
                                     <Button
-                                        onClick={() => {
-                                            setConfirmationAction('check-in');
-                                            setIsConfirmationModalOpen(true);
-                                        }}
+                                        onClick={() => navigate('/attendance/check-in')}
                                         variant="primary"
                                         className="flex-1 !py-3 text-base md:text-lg shadow-lg shadow-emerald-100 hover:shadow-emerald-200 transition-all"
                                         disabled={isCheckedIn || isActionInProgress}
@@ -462,10 +387,7 @@ const ProfilePage: React.FC = () => {
                                         <LogIn className="mr-2 h-5 w-5" /> Check In
                                     </Button>
                                     <Button
-                                        onClick={() => {
-                                            setConfirmationAction('check-out');
-                                            setIsConfirmationModalOpen(true);
-                                        }}
+                                        onClick={() => navigate('/attendance/check-out')}
                                         variant="danger"
                                         className="flex-1 !py-3 text-base md:text-lg shadow-lg shadow-red-100 hover:shadow-red-200 transition-all"
                                         disabled={!isCheckedIn || isActionInProgress}

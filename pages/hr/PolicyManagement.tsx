@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import type { Policy } from '../../types';
 import { Plus, Edit, Trash2 } from 'lucide-react';
@@ -89,6 +90,7 @@ const PolicyForm: React.FC<{
 
 
 const PolicyManagement: React.FC = () => {
+    const navigate = useNavigate();
     const [policies, setPolicies] = useState<Policy[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -156,8 +158,7 @@ const PolicyManagement: React.FC = () => {
     };
 
     const handleAddClick = () => {
-        setCurrentPolicy(null);
-        setIsFormOpen(true);
+        navigate('/hr/policies/add');
     };
 
     const handleEditClick = (policy: Policy) => {
