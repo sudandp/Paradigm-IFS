@@ -57,6 +57,11 @@ const MyLocations: React.FC = () => {
   const [address, setAddress] = useState('');
   const [editingLocationId, setEditingLocationId] = useState<string | null>(null);
 
+  // Self-selection state for users with no locations
+  const [selectedLocationIds, setSelectedLocationIds] = useState<string[]>([]);
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
   // Check if user can manage locations (admin or HR)
   const canManageLocations = user && ['admin', 'hr'].includes(user.role);
 
@@ -142,8 +147,48 @@ const MyLocations: React.FC = () => {
     }
   };
 
+  const handleSelfAssign = async () => {
+    if (!user || selectedLocationIds.length === 0) {
+      setToast({ message: 'Please select at least one location.', type: 'error' });
+      return;
+    }
+
+    setIsAssigning(true);
+    try {
+      // Assign all selected locations to the current user
+      await Promise.all(
+        selectedLocationIds.map(locationId =>
+          api.assignLocationToUser(user.id, locationId)
+        )
+      );
+
+      setToast({ message: 'Locations assigned successfully!', type: 'success' });
+      setSelectedLocationIds([]);
+
+      // Refresh user locations
+      const userLocs = await api.getUserLocations(user.id);
+      setLocations(userLocs);
+    } catch (err: any) {
+      console.error(err);
+      setToast({ message: err.message || 'Failed to assign locations.', type: 'error' });
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleLocationToggle = (locationId: string) => {
+    setSelectedLocationIds(prev =>
+      prev.includes(locationId)
+        ? prev.filter(id => id !== locationId)
+        : [...prev, locationId]
+    );
+  };
+
   const handleSubmit = async () => {
-    if (!user || !canManageLocations) {
+    if (!user) return;
+
+    // Only admins can ADD new locations. Everyone can EDIT existing ones (name only for regular users).
+    if (!editingLocationId && !canManageLocations) {
       setToast({ message: 'You do not have permission to add locations.', type: 'error' });
       return;
     }
@@ -303,6 +348,8 @@ const MyLocations: React.FC = () => {
               {editingLocationId ? 'Edit Location' : 'Add New Location'}
             </h3>
 
+            {/* Note: Regular users can ONLY edit the Name. Latitude, Longitude, and Address are disabled for non-admins. */}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Input
                 label="Location Name (required) *"
@@ -365,9 +412,97 @@ const MyLocations: React.FC = () => {
         {loading ? (
           <p>Loading locations...</p>
         ) : locations.length === 0 ? (
-          <p className="text-muted text-center md:text-left">
-            {canManageLocations ? 'No locations assigned. Use the form above to add one.' : 'You have no locations assigned. Contact your administrator.'}
-          </p>
+          <div>
+            {canManageLocations ? (
+              <p className="text-muted text-center md:text-left">
+                No locations assigned. Use the form above to add one.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-2">Select Your Locations</h3>
+                  <p className="text-sm text-blue-800 mb-4">
+                    You don't have any locations assigned yet. Please select the locations where you'll be working from the list below.
+                  </p>
+                </div>
+
+                {allLocations.length === 0 ? (
+                  <p className="text-muted text-center">No locations available. Contact your administrator.</p>
+                ) : (
+                  <div>
+                    <div className="mb-4">
+                      <Input
+                        type="text"
+                        placeholder="Search by name or address..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                      {allLocations
+                        .filter(loc =>
+                          searchTerm === '' ||
+                          loc.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          loc.address?.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map((loc) => (
+                          <div
+                            key={loc.id}
+                            onClick={() => handleLocationToggle(loc.id)}
+                            className={`border rounded-lg p-4 cursor-pointer transition-all ${selectedLocationIds.includes(loc.id)
+                              ? 'border-accent bg-accent/10 shadow-md'
+                              : 'border-border hover:border-accent/50 hover:bg-gray-50'
+                              }`}
+                          >
+                            <div className="flex items-start">
+                              <input
+                                type="checkbox"
+                                checked={selectedLocationIds.includes(loc.id)}
+                                onChange={() => { }}
+                                className="mt-1 mr-3 h-5 w-5 text-accent rounded focus:ring-accent"
+                              />
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start">
+                                  <h4 className="font-semibold text-primary-text">{loc.name || 'Unnamed Location'}</h4>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEdit(loc);
+                                    }}
+                                    className="text-blue-600 hover:text-blue-800 p-1"
+                                    title="Edit Name"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </button>
+                                </div>
+                                <p className="text-sm text-muted mt-1">{loc.address || 'No address'}</p>
+                                <p className="text-xs text-muted mt-2">
+                                  Coordinates: {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)} • Radius: {loc.radius}m
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+
+                    <div className="flex justify-center">
+                      <Button
+                        onClick={handleSelfAssign}
+                        isLoading={isAssigning}
+                        disabled={isAssigning || selectedLocationIds.length === 0}
+                      >
+                        {selectedLocationIds.length === 0
+                          ? 'Select Locations Above'
+                          : `Assign ${selectedLocationIds.length} Location${selectedLocationIds.length > 1 ? 's' : ''}`}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         ) : (
           <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-1 md:gap-4">
             {/* Mobile Card View */}

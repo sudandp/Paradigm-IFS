@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import type { User } from '../../types';
-import { ShieldCheck, Plus, Edit, Trash2, Info, UserCheck } from 'lucide-react';
+import { ShieldCheck, Plus, Edit, Trash2, Info, UserCheck, MapPin } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Toast from '../../components/ui/Toast';
@@ -12,6 +12,7 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import TableSkeleton from '../../components/skeletons/TableSkeleton';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import ApprovalModal from '../../components/admin/ApprovalModal';
+import LocationAssignmentModal from '../../components/admin/LocationAssignmentModal';
 
 const UserManagement: React.FC = () => {
     const navigate = useNavigate();
@@ -21,8 +22,10 @@ const UserManagement: React.FC = () => {
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+    const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
     const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [currentUserForLocation, setCurrentUserForLocation] = useState<User | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const isMobile = useMediaQuery('(max-width: 767px)');
 
@@ -58,6 +61,11 @@ const UserManagement: React.FC = () => {
     const handleDelete = (user: User) => {
         setCurrentUser(user);
         setIsDeleteModalOpen(true);
+    };
+
+    const handleManageLocations = (user: User) => {
+        setCurrentUserForLocation(user);
+        setIsLocationModalOpen(true);
     };
 
     const handleConfirmApproval = async (userId: string, newRole: string) => {
@@ -115,6 +123,13 @@ const UserManagement: React.FC = () => {
             >
                 Are you sure you want to delete the user "{currentUser?.name}"? This action cannot be undone.
             </Modal>
+
+            <LocationAssignmentModal
+                isOpen={isLocationModalOpen}
+                onClose={() => setIsLocationModalOpen(false)}
+                userId={currentUserForLocation?.id || ''}
+                userName={currentUserForLocation?.name || ''}
+            />
 
             <AdminPageHeader title="User Management">
                 <Button onClick={handleAdd}><Plus className="mr-2 h-4 w-4" /> Add User</Button>
