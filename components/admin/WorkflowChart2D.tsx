@@ -12,19 +12,35 @@ interface WorkflowNode extends User {
 
 interface WorkflowChart2DProps {
     users: (User & { managerName?: string })[];
+    externalSearchQuery?: string;
+    externalZoom?: number;
+    showControls?: boolean; // default true for backward compatibility
 }
 
-const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({ users }) => {
+const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({
+    users,
+    externalSearchQuery,
+    externalZoom,
+    showControls = true
+}) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [hoveredNode, setHoveredNode] = useState<WorkflowNode | null>(null);
     const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    const [searchQuery, setSearchQuery] = useState('');
-    const [zoom, setZoom] = useState(0.6);
+    const [internalSearchQuery, setInternalSearchQuery] = useState('');
+    const [internalZoom, setInternalZoom] = useState(1.0); // Increased for better vertical layout visibility
     const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+    // Use external controls if provided, otherwise use internal state
+    const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
+    const zoom = externalZoom !== undefined ? externalZoom : internalZoom;
+    const setSearchQuery = setInternalSearchQuery;
+    const setZoom = setInternalZoom;
     const animationRef = useRef<number | null>(null);
     const isDraggingRef = useRef(false);
+    const dragStartRef = useRef({ x: 0, y: 0 });
+    const hasDraggedRef = useRef(false);
     const lastMouseRef = useRef({ x: 0, y: 0 });
     const timeRef = useRef(0);
     const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
@@ -69,24 +85,23 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({ users }) => {
         return roots;
     };
 
-    // Calculate tree layout (top-down hierarchical) with better spacing
-    // Calculate tree layout (Left-to-Right hierarchical)
+    // Calculate tree layout (Top-to-Bottom vertical hierarchical)
     const calculateLayout = (
         nodes: WorkflowNode[],
         startX = 50,
         startY = 50,
         level = 0
     ): {
-        height: number;
+        width: number;
         nodes: WorkflowNode[];
         bounds: { minX: number; maxX: number; minY: number; maxY: number };
     } => {
-        const HORIZONTAL_SPACING = 200;
-        const VERTICAL_SPACING = 40; // Spacing between siblings vertically
+        const HORIZONTAL_SPACING = 10; // Very compact - reduced from 20px
+        const VERTICAL_SPACING = 100;  // Compact - reduced from 120px
         const NODE_HEIGHT = 120;
         const NODE_WIDTH = 180;
 
-        let currentY = startY;
+        let currentX = startX;
         const allNodes: WorkflowNode[] = [];
         let minX = Infinity,
             maxX = -Infinity,
@@ -97,57 +112,58 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({ users }) => {
             node.level = level;
 
             if (node.children && node.children.length > 0) {
-                const childLayout = calculateLayout(node.children, startX + NODE_WIDTH + HORIZONTAL_SPACING, currentY, level + 1);
+                // Calculate children layout first
+                const childLayout = calculateLayout(node.children, currentX, startY + NODE_HEIGHT + VERTICAL_SPACING, level + 1);
 
-                // Center parent vertically relative to children
-                const childrenHeight = childLayout.height;
-                const parentY = currentY + childrenHeight / 2 - NODE_HEIGHT / 2;
+                // Center parent horizontally relative to children
+                const childrenWidth = childLayout.width;
+                const parentX = currentX + childrenWidth / 2 - NODE_WIDTH / 2;
 
-                node.x = startX;
-                node.y = parentY;
+                node.x = parentX;
+                node.y = startY;
 
                 allNodes.push(node);
                 allNodes.push(...childLayout.nodes);
 
                 // Update bounds
-                minX = Math.min(minX, startX, childLayout.bounds.minX);
-                maxX = Math.max(maxX, startX + NODE_WIDTH, childLayout.bounds.maxX);
-                minY = Math.min(minY, parentY, childLayout.bounds.minY);
-                maxY = Math.max(maxY, parentY + NODE_HEIGHT, childLayout.bounds.maxY);
+                minX = Math.min(minX, parentX, childLayout.bounds.minX);
+                maxX = Math.max(maxX, parentX + NODE_WIDTH, childLayout.bounds.maxX);
+                minY = Math.min(minY, startY, childLayout.bounds.minY);
+                maxY = Math.max(maxY, startY + NODE_HEIGHT, childLayout.bounds.maxY);
 
-                currentY += childrenHeight + VERTICAL_SPACING;
+                currentX += childrenWidth + HORIZONTAL_SPACING;
             } else {
                 // Leaf node
-                node.x = startX;
-                node.y = currentY;
+                node.x = currentX;
+                node.y = startY;
                 allNodes.push(node);
 
                 // Update bounds
-                minX = Math.min(minX, startX);
-                maxX = Math.max(maxX, startX + NODE_WIDTH);
-                minY = Math.min(minY, currentY);
-                maxY = Math.max(maxY, currentY + NODE_HEIGHT);
+                minX = Math.min(minX, currentX);
+                maxX = Math.max(maxX, currentX + NODE_WIDTH);
+                minY = Math.min(minY, startY);
+                maxY = Math.max(maxY, startY + NODE_HEIGHT);
 
-                currentY += NODE_HEIGHT + VERTICAL_SPACING;
+                currentX += NODE_WIDTH + HORIZONTAL_SPACING;
             }
         });
 
-        const totalHeight = Math.max(0, currentY - startY - VERTICAL_SPACING);
+        const totalWidth = Math.max(0, currentX - startX - HORIZONTAL_SPACING);
         return {
-            height: Math.max(totalHeight, NODE_HEIGHT),
+            width: Math.max(totalWidth, NODE_WIDTH),
             nodes: allNodes,
             bounds: { minX: isFinite(minX) ? minX : 0, maxX: isFinite(maxX) ? maxX : NODE_WIDTH, minY: isFinite(minY) ? minY : 0, maxY: isFinite(maxY) ? maxY : 300 },
         };
     };
 
-    // Draw connection line between nodes
+    // Draw connection line between nodes (vertical: top to bottom)
     const drawConnection = (ctx: CanvasRenderingContext2D, from: WorkflowNode, to: WorkflowNode, time: number) => {
         if (from.x === undefined || from.y === undefined || to.x === undefined || to.y === undefined) return;
 
-        const fromX = (from.x + 180) * zoom + offset.x; // Right side of parent
-        const fromY = (from.y + 60) * zoom + offset.y;  // Center Y
-        const toX = (to.x) * zoom + offset.x;           // Left side of child
-        const toY = (to.y + 60) * zoom + offset.y;      // Center Y
+        const fromX = (from.x + 90) * zoom + offset.x;  // Center X of parent
+        const fromY = (from.y + 120) * zoom + offset.y; // Bottom of parent
+        const toX = (to.x + 90) * zoom + offset.x;      // Center X of child  
+        const toY = (to.y) * zoom + offset.y;           // Top of child
 
         // Animated gradient
         const gradient = ctx.createLinearGradient(fromX, fromY, toX, toY);
@@ -163,11 +179,11 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({ users }) => {
         ctx.shadowColor = 'rgba(99, 102, 241, 0.2)';
         ctx.shadowBlur = 4;
 
-        // Draw smooth curved connection
+        // Draw smooth curved connection (vertical)
         ctx.beginPath();
         ctx.moveTo(fromX, fromY);
-        const midX = (fromX + toX) / 2;
-        ctx.bezierCurveTo(midX, fromY, midX, toY, toX, toY);
+        const midY = (fromY + toY) / 2;
+        ctx.bezierCurveTo(fromX, midY, toX, midY, toX, toY);
         ctx.stroke();
         ctx.restore();
 
@@ -176,8 +192,8 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({ users }) => {
         const t = flowT;
 
         const p0 = { x: fromX, y: fromY };
-        const p1 = { x: (fromX + toX) / 2, y: fromY };
-        const p2 = { x: (fromX + toX) / 2, y: toY };
+        const p1 = { x: fromX, y: (fromY + toY) / 2 };
+        const p2 = { x: toX, y: (fromY + toY) / 2 };
         const p3 = { x: toX, y: toY };
 
         // Cubic bezier interpolation
@@ -393,25 +409,54 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({ users }) => {
         const layout = calculateLayout(hierarchy);
         const bounds = layout.bounds;
 
-        const contentWidth = Math.max(1, bounds.maxX - bounds.minX);
-        const contentHeight = Math.max(1, bounds.maxY - bounds.minY);
-        const contentCenterX = (bounds.minX + bounds.maxX) / 2;
-        const contentCenterY = (bounds.minY + bounds.maxY) / 2;
+        // Add padding to content dimensions
+        const NODE_WIDTH = 180;
+        const NODE_HEIGHT = 120;
+        const contentWidth = Math.max(1, bounds.maxX - bounds.minX + NODE_WIDTH);
+        const contentHeight = Math.max(1, bounds.maxY - bounds.minY + NODE_HEIGHT);
+
+        // Calculate true center of content including node dimensions
+        const contentCenterX = bounds.minX + contentWidth / 2;
+        const contentCenterY = bounds.minY + contentHeight / 2;
 
         // Use CSS pixels (rect.width/height)
-        const paddingFactor = 0.85;
+        const paddingFactor = 0.98; // Maximize viewport usage - use 98% of available space
         const zoomX = (rect.width * paddingFactor) / contentWidth;
         const zoomY = (rect.height * paddingFactor) / contentHeight;
         let newZoom = Math.min(zoomX, zoomY);
 
-        newZoom = Math.max(0.4, Math.min(newZoom, 1.0));
+        // Clamp zoom to reasonable range - allow very small zoom to fit all employees
+        newZoom = Math.max(0.1, Math.min(newZoom, 2.0)); // Min 10%, Max 200%
 
-        const newOffsetX = rect.width / 2 - contentCenterX * newZoom;
-        const newOffsetY = rect.height / 2 - contentCenterY * newZoom;
+        // If using external zoom, use that but still center properly
+        const actualZoom = externalZoom !== undefined ? externalZoom : newZoom;
 
-        setZoom(newZoom);
+        // Center the content in the viewport
+        const newOffsetX = rect.width / 2 - contentCenterX * actualZoom;
+        const newOffsetY = rect.height / 2 - contentCenterY * actualZoom;
+
+        if (externalZoom === undefined) {
+            setZoom(newZoom);
+        }
         setOffset({ x: newOffsetX, y: newOffsetY });
     };
+
+    // Trigger auto-fit when component mounts or users change
+    useEffect(() => {
+        if (users.length > 0) {
+            // Small delay to ensure canvas is ready
+            const timer = setTimeout(() => autoFit(), 100);
+            return () => clearTimeout(timer);
+        }
+    }, [users.length]);
+
+    // Recalculate offset when external zoom changes to keep chart centered
+    useEffect(() => {
+        if (externalZoom !== undefined && users.length > 0) {
+            autoFit();
+        }
+    }, [externalZoom]);
+
 
     // Handle canvas resize with High DPI support
     useEffect(() => {
@@ -504,26 +549,23 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({ users }) => {
         };
     }, [users, hoveredNode, selectedNode, mousePos, zoom, offset, searchQuery]);
 
-    // Mouse handlers
+    // Mouse handlers - Allow dragging from anywhere
     const handleMouseDown = (e: React.MouseEvent) => {
-        if (!hoveredNode) {
-            isDraggingRef.current = true;
-            lastMouseRef.current = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
-        }
+        isDraggingRef.current = true;
+        hasDraggedRef.current = false;
+        const x = e.nativeEvent.offsetX;
+        const y = e.nativeEvent.offsetY;
+        lastMouseRef.current = { x, y };
+        dragStartRef.current = { x, y };
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        // offsetX/offsetY are CSS pixels here
+        // Only update mouse position for hover detection
         const x = e.nativeEvent.offsetX;
         const y = e.nativeEvent.offsetY;
         setMousePos({ x, y });
 
-        if (isDraggingRef.current) {
-            const dx = x - lastMouseRef.current.x;
-            const dy = y - lastMouseRef.current.y;
-            setOffset((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
-            lastMouseRef.current = { x, y };
-        }
+        // No panning - chart stays fixed
     };
 
     const handleMouseUp = () => {
@@ -531,9 +573,11 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({ users }) => {
     };
 
     const handleClick = () => {
-        if (hoveredNode && !isDraggingRef.current) {
+        // Show details on click
+        if (hoveredNode) {
             setSelectedNode(selectedNode?.id === hoveredNode.id ? null : hoveredNode);
         }
+        hasDraggedRef.current = false;
     };
 
     const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.2, 2.5));
@@ -546,54 +590,71 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({ users }) => {
 
     return (
         <div className="relative w-full h-full bg-gradient-to-br from-slate-50 to-slate-100" ref={containerRef}>
-            {/* Controls */}
-            <div className="absolute top-4 left-4 z-20 flex flex-col gap-3">
-                {/* Search */}
-                <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-xl shadow-xl p-3 min-w-[280px]">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Search employees..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        />
+            {/* Controls - only show if showControls is true */}
+            {showControls && (
+                <div className="absolute top-4 left-4 z-20 flex flex-col gap-3">
+                    {/* Search */}
+                    <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-xl shadow-xl p-3 min-w-[280px]">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Search employees..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            />
+                        </div>
+                        {searchQuery && (
+                            <p className="mt-2 text-xs text-slate-500">
+                                {users.filter((u) => u.name.toLowerCase().includes(searchQuery.toLowerCase())).length} results
+                            </p>
+                        )}
                     </div>
-                    {searchQuery && (
-                        <p className="mt-2 text-xs text-slate-500">
-                            {users.filter((u) => u.name.toLowerCase().includes(searchQuery.toLowerCase())).length} results
-                        </p>
-                    )}
-                </div>
 
-                {/* Zoom Controls */}
-                <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg p-1.5 flex gap-1 items-center">
-                    <button
-                        onClick={handleZoomOut}
-                        className="p-2 hover:bg-slate-100/80 rounded-xl transition-all duration-200 text-slate-600 hover:text-slate-900 active:scale-95"
-                        title="Zoom Out"
-                    >
-                        <ZoomOut className="w-5 h-5" />
-                    </button>
-                    <div className="px-2 min-w-[48px] text-center font-semibold text-slate-700 text-sm tabular-nums">{Math.round(zoom * 100)}%</div>
-                    <button
-                        onClick={handleZoomIn}
-                        className="p-2 hover:bg-slate-100/80 rounded-xl transition-all duration-200 text-slate-600 hover:text-slate-900 active:scale-95"
-                        title="Zoom In"
-                    >
-                        <ZoomIn className="w-5 h-5" />
-                    </button>
-                    <div className="w-px h-6 bg-slate-200 mx-1" />
-                    <button
-                        onClick={handleReset}
-                        className="p-2 hover:bg-slate-100/80 rounded-xl transition-all duration-200 text-slate-600 hover:text-slate-900 active:scale-95"
-                        title="Reset View"
-                    >
-                        <Maximize2 className="w-5 h-5" />
-                    </button>
+                    {/* Zoom Controls */}
+                    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg p-3 flex flex-col gap-3 min-w-[240px]">
+                        <div className="flex gap-2 items-center">
+                            <button
+                                onClick={handleZoomOut}
+                                className="p-2 hover:bg-slate-100/80 rounded-xl transition-all duration-200 text-slate-600 hover:text-slate-900 active:scale-95"
+                                title="Zoom Out"
+                            >
+                                <ZoomOut className="w-5 h-5" />
+                            </button>
+                            <div className="flex-1 px-2">
+                                <input
+                                    type="range"
+                                    min="40"
+                                    max="250"
+                                    value={Math.round(zoom * 100)}
+                                    onChange={(e) => setZoom(parseInt(e.target.value) / 100)}
+                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-indigo-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md"
+                                    title="Zoom Slider"
+                                />
+                            </div>
+                            <button
+                                onClick={handleZoomIn}
+                                className="p-2 hover:bg-slate-100/80 rounded-xl transition-all duration-200 text-slate-600 hover:text-slate-900 active:scale-95"
+                                title="Zoom In"
+                            >
+                                <ZoomIn className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <div className="px-2 min-w-[60px] text-center font-semibold text-slate-700 text-sm tabular-nums bg-slate-100 rounded-lg py-1">{Math.round(zoom * 100)}%</div>
+                            <div className="w-px h-6 bg-slate-200" />
+                            <button
+                                onClick={handleReset}
+                                className="p-2 hover:bg-slate-100/80 rounded-xl transition-all duration-200 text-slate-600 hover:text-slate-900 active:scale-95"
+                                title="Reset View"
+                            >
+                                <Maximize2 className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Canvas */}
             <canvas
@@ -611,8 +672,8 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({ users }) => {
                 <div
                     className="absolute pointer-events-none z-10 transform -translate-x-1/2 transition-all duration-200"
                     style={{
-                        left: `${hoveredNode.x * zoom + offset.x + (180 * zoom) / 2}px`,
-                        top: `${hoveredNode.y * zoom + offset.y - 20}px`,
+                        left: `${hoveredNode.x * zoom + offset.x + (90 * zoom)}px`, // Center X of node
+                        top: `${Math.max(10, hoveredNode.y * zoom + offset.y - 10)}px`, // Above node with min margin
                     }}
                 >
                     <div className="bg-white/95 backdrop-blur-xl border border-indigo-200 rounded-2xl shadow-2xl p-5 min-w-[320px] animate-fade-in-scale">
@@ -671,51 +732,53 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({ users }) => {
             )}
 
             {/* Instructions */}
-            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-md px-6 py-3 rounded-full border border-slate-200 shadow-xl">
-                <p className="text-sm text-slate-700 font-medium flex items-center gap-3">
-                    <span className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
-                        Drag to pan
-                    </span>
-                    <span className="text-slate-300">•</span>
-                    <span>Hover for details</span>
-                    <span className="text-slate-300">•</span>
-                    <span>Click to select</span>
-                </p>
-            </div>
+            {showControls && (
+                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-md px-6 py-3 rounded-full border border-slate-200 shadow-xl">
+                    <p className="text-sm text-slate-700 font-medium flex items-center gap-3">
+                        <span className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                            Hover for details
+                        </span>
+                        <span className="text-slate-300">•</span>
+                        <span>Click to view</span>
+                    </p>
+                </div>
+            )}
 
             {/* Legend */}
-            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl p-4 max-w-[200px]">
-                <h4 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                    <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></div>
-                    Org Hierarchy
-                </h4>
-                <div className="space-y-2.5">
-                    <div className="flex items-center gap-3 text-xs text-slate-600">
-                        <div className="w-5 h-5 rounded bg-gradient-to-br from-purple-500 to-indigo-600 border-2 border-white shadow-md flex-shrink-0"></div>
-                        <span>Team Member</span>
+            {showControls && (
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl p-4 max-w-[200px]">
+                    <h4 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></div>
+                        Org Hierarchy
+                    </h4>
+                    <div className="space-y-2.5">
+                        <div className="flex items-center gap-3 text-xs text-slate-600">
+                            <div className="w-5 h-5 rounded bg-gradient-to-br from-purple-500 to-indigo-600 border-2 border-white shadow-md flex-shrink-0"></div>
+                            <span>Team Member</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-600">
+                            <div className="w-5 h-5 rounded bg-gradient-to-br from-emerald-400 to-emerald-600 border-2 border-white shadow-md flex-shrink-0"></div>
+                            <span>Search Match</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-600">
+                            <div className="w-8 h-0.5 bg-gradient-to-r from-indigo-400 to-purple-500 flex-shrink-0 shadow-sm"></div>
+                            <span>Reports To</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-600">
+                            <div className="w-5 h-5 rounded-full bg-emerald-500 text-white text-[8px] font-bold flex items-center justify-center flex-shrink-0">L2</div>
+                            <span>Level Badge</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-slate-600">
-                        <div className="w-5 h-5 rounded bg-gradient-to-br from-emerald-400 to-emerald-600 border-2 border-white shadow-md flex-shrink-0"></div>
-                        <span>Search Match</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-slate-600">
-                        <div className="w-8 h-0.5 bg-gradient-to-r from-indigo-400 to-purple-500 flex-shrink-0 shadow-sm"></div>
-                        <span>Reports To</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-slate-600">
-                        <div className="w-5 h-5 rounded-full bg-emerald-500 text-white text-[8px] font-bold flex items-center justify-center flex-shrink-0">L2</div>
-                        <span>Level Badge</span>
-                    </div>
-                </div>
 
-                {selectedNode && (
-                    <div className="mt-4 pt-4 border-t border-slate-200">
-                        <p className="text-xs font-semibold text-indigo-600 mb-1">Selected:</p>
-                        <p className="text-xs text-slate-700 font-medium truncate">{selectedNode.name}</p>
-                    </div>
-                )}
-            </div>
+                    {selectedNode && (
+                        <div className="mt-4 pt-4 border-t border-slate-200">
+                            <p className="text-xs font-semibold text-indigo-600 mb-1">Selected:</p>
+                            <p className="text-xs text-slate-700 font-medium truncate">{selectedNode.name}</p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Stats */}
             <div className="absolute bottom-6 right-6 bg-slate-900/80 backdrop-blur-sm text-white text-xs px-3 py-2 rounded-full font-mono">{users.length} employees</div>

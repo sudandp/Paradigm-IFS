@@ -8,6 +8,7 @@ import Button from '../../components/ui/Button';
 import Toast from '../../components/ui/Toast';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 import WorkflowChart2D from '../../components/admin/WorkflowChart2D';
+import OrgWorkflowCard from '../../components/admin/OrgWorkflowCard';
 
 
 type UserWithManager = User & { managerName?: string };
@@ -198,21 +199,7 @@ const ApprovalWorkflow: React.FC = () => {
 
                         {/* 2D Workflow Chart */}
                         {activeTab === '2d' && (
-                            <div className="relative">
-                                <div className="absolute top-4 right-4 z-10">
-                                    <Button
-                                        onClick={() => navigate('/admin/approval-workflow/chart')}
-                                        variant="secondary"
-                                        className="shadow-md bg-white/90 hover:bg-white"
-                                    >
-                                        <Maximize2 className="w-4 h-4 mr-2" />
-                                        Full Screen View
-                                    </Button>
-                                </div>
-                                <div className="mx-auto border border-border rounded-lg overflow-hidden bg-white h-[1940px] w-[1240px] relative">
-                                    <WorkflowChart2D users={users} />
-                                </div>
-                            </div>
+                            <OrgWorkflowCard users={users} />
                         )}
 
 
