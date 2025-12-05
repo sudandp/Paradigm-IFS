@@ -96,8 +96,8 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({
         nodes: WorkflowNode[];
         bounds: { minX: number; maxX: number; minY: number; maxY: number };
     } => {
-        const HORIZONTAL_SPACING = 10; // Very compact - reduced from 20px
-        const VERTICAL_SPACING = 100;  // Compact - reduced from 120px
+        const HORIZONTAL_SPACING = 20; // Reduced from 40 for more compact layout
+        const VERTICAL_SPACING = 120;  // Reduced from 150 for better fit
         const NODE_HEIGHT = 120;
         const NODE_WIDTH = 180;
 
@@ -425,8 +425,8 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({
         const zoomY = (rect.height * paddingFactor) / contentHeight;
         let newZoom = Math.min(zoomX, zoomY);
 
-        // Clamp zoom to reasonable range - allow very small zoom to fit all employees
-        newZoom = Math.max(0.1, Math.min(newZoom, 2.0)); // Min 10%, Max 200%
+        // Clamp zoom to reasonable range
+        newZoom = Math.max(0.3, Math.min(newZoom, 1.5));
 
         // If using external zoom, use that but still center properly
         const actualZoom = externalZoom !== undefined ? externalZoom : newZoom;
@@ -560,12 +560,28 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        // Only update mouse position for hover detection
+        // offsetX/offsetY are CSS pixels here
         const x = e.nativeEvent.offsetX;
         const y = e.nativeEvent.offsetY;
         setMousePos({ x, y });
 
-        // No panning - chart stays fixed
+        if (isDraggingRef.current) {
+            const dx = (x - lastMouseRef.current.x) * 1.3; // 30% increase in drag sensitivity
+            const dy = (y - lastMouseRef.current.y) * 1.3;
+
+            // Check if movement exceeds threshold (5 pixels)
+            const distanceFromStart = Math.sqrt(
+                Math.pow(x - dragStartRef.current.x, 2) +
+                Math.pow(y - dragStartRef.current.y, 2)
+            );
+
+            if (distanceFromStart > 5) {
+                hasDraggedRef.current = true;
+            }
+
+            setOffset((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+            lastMouseRef.current = { x, y };
+        }
     };
 
     const handleMouseUp = () => {
@@ -573,8 +589,8 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({
     };
 
     const handleClick = () => {
-        // Show details on click
-        if (hoveredNode) {
+        // Only trigger node selection if user didn't drag
+        if (hoveredNode && !hasDraggedRef.current) {
             setSelectedNode(selectedNode?.id === hoveredNode.id ? null : hoveredNode);
         }
         hasDraggedRef.current = false;
@@ -737,10 +753,12 @@ const WorkflowChart2D: React.FC<WorkflowChart2DProps> = ({
                     <p className="text-sm text-slate-700 font-medium flex items-center gap-3">
                         <span className="flex items-center gap-2">
                             <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
-                            Hover for details
+                            Drag to pan
                         </span>
                         <span className="text-slate-300">•</span>
-                        <span>Click to view</span>
+                        <span>Hover for details</span>
+                        <span className="text-slate-300">•</span>
+                        <span>Click to select</span>
                     </p>
                 </div>
             )}

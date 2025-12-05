@@ -106,30 +106,36 @@ const OrgWorkflowCard: React.FC<OrgWorkflowCardProps> = ({ users }) => {
                     showControls={false}
                 />
 
-                {/* Legend - moved to bottom-left to free right side space */}
-                <div className={`absolute bottom-4 left-4 z-20 ${showLegend ? 'block' : 'hidden'} md:block`}>
-                    <div className="bg-white/95 backdrop-blur-sm border border-slate-200 rounded-xl shadow-lg px-3 py-2 min-w-[180px]">
-                        <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" />
+                {/* Legend */}
+                <div className={`absolute bottom-4 right-4 z-20 ${showLegend ? 'block' : 'hidden'} md:block`}>
+                    <div className="bg-white/95 backdrop-blur-sm border border-slate-200 rounded-xl shadow-lg px-4 py-3 min-w-[200px]">
+                        <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" />
                                 Legend
                             </h4>
+                            <button
+                                onClick={() => setShowLegend(!showLegend)}
+                                className="md:hidden text-slate-400 hover:text-slate-600"
+                            >
+                                <Info className="w-3 h-3" />
+                            </button>
                         </div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                             <div className="flex items-center gap-2 text-xs text-slate-600">
-                                <div className="w-3 h-3 rounded bg-gradient-to-br from-purple-500 to-indigo-600 border border-white shadow-sm flex-shrink-0" />
+                                <div className="w-4 h-4 rounded bg-gradient-to-br from-purple-500 to-indigo-600 border border-white shadow-sm flex-shrink-0" />
                                 <span>Team Member</span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-slate-600">
-                                <div className="w-3 h-3 rounded bg-gradient-to-br from-emerald-400 to-emerald-600 border border-white shadow-sm flex-shrink-0" />
+                                <div className="w-4 h-4 rounded bg-gradient-to-br from-emerald-400 to-emerald-600 border border-white shadow-sm flex-shrink-0" />
                                 <span>Search Match</span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-slate-600">
-                                <div className="w-5 h-0.5 bg-gradient-to-r from-indigo-400 to-purple-500 flex-shrink-0 shadow-sm" />
+                                <div className="w-6 h-0.5 bg-gradient-to-r from-indigo-400 to-purple-500 flex-shrink-0 shadow-sm" />
                                 <span>Reports To</span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-slate-600">
-                                <div className="w-3 h-3 rounded-full bg-emerald-500 text-white text-[7px] font-bold flex items-center justify-center flex-shrink-0">L2</div>
+                                <div className="w-4 h-4 rounded-full bg-emerald-500 text-white text-[8px] font-bold flex items-center justify-center flex-shrink-0">L2</div>
                                 <span>Level Badge</span>
                             </div>
                         </div>
@@ -139,7 +145,7 @@ const OrgWorkflowCard: React.FC<OrgWorkflowCardProps> = ({ users }) => {
                 {/* Mobile Legend Toggle */}
                 <button
                     onClick={() => setShowLegend(!showLegend)}
-                    className="md:hidden absolute bottom-4 left-4 z-30 bg-white border border-slate-200 rounded-full p-2 shadow-lg"
+                    className="md:hidden absolute bottom-4 right-4 z-30 bg-white border border-slate-200 rounded-full p-2 shadow-lg"
                 >
                     <Info className="w-5 h-5 text-slate-600" />
                 </button>
